@@ -1,0 +1,35 @@
+[2025-11-18 15:00:42] Starting project preparation
+[2025-11-18 15:00:42] Source: /Users/arpansagar/Downloads/Whoxa-dev-main/whoxa-3.0
+[2025-11-18 15:00:42] Destination: /Users/arpansagar/Desktop/whoxa-shareable
+[2025-11-18 15:00:42] Running flutter clean in source directory...
+[2025-11-18 15:00:46] Flutter clean completed successfully
+[2025-11-18 15:00:46] Copying project files with rsync...
+[2025-11-18 15:00:46] Initial copy completed
+[2025-11-18 15:00:46] Copying platform-fixes...
+[2025-11-18 15:00:46] Files copied: 1016
+[2025-11-18 15:00:46] Redacting sensitive files...
+[2025-11-18 15:00:55] Redacted 3 files
+[2025-11-18 15:00:55] Cleaning iOS build artifacts...
+[2025-11-18 15:00:55] Cleaning Android build artifacts...
+[2025-11-18 15:00:55] Cleaning Flutter build artifacts...
+[2025-11-18 15:00:55] Removing preparation script from destination...
+[2025-11-18 15:00:55] Creating placeholder templates...
+[2025-11-18 15:00:55] Created google-services.json template
+[2025-11-18 15:00:55] Created GoogleService-Info.plist template
+[2025-11-18 15:00:55] Created local.properties.example
+[2025-11-18 15:00:55] Created keystore.example
+[2025-11-18 15:00:55] Generating checksums...
+[2025-11-18 15:00:56] Checksums saved to checksums.txt
+[2025-11-18 15:00:56] Final destination size:  45M
+[2025-11-18 15:00:56] 
+[2025-11-18 15:00:56] ============================================
+[2025-11-18 15:00:56] SUMMARY
+[2025-11-18 15:00:56] ============================================
+[2025-11-18 15:00:56] Files copied: 1016
+[2025-11-18 15:00:56] Files redacted: 3
+[2025-11-18 15:00:56] Warnings: 0
+[2025-11-18 15:00:56] 
+[2025-11-18 15:00:56] Project prepared successfully!
+[2025-11-18 15:00:56] Destination: /Users/arpansagar/Desktop/whoxa-shareable
+[2025-11-18 15:00:56] Log file: /Users/arpansagar/Desktop/whoxa-shareable/prep_log_20251118_150042.txt
+[2025-11-18 15:00:56] ============================================
