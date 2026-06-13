@@ -1,4 +1,4 @@
-package com.primocys.chat
+package com.cheetanews.chat
 
 import android.content.Intent
 import android.provider.ContactsContract
@@ -11,11 +11,11 @@ import android.os.Bundle
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import com.primocys.chat.CallAudioManager
-import com.primocys.chat.Notifications
+import com.cheetanews.chat.CallAudioManager
+import com.cheetanews.chat.Notifications
 
 class MainActivity : FlutterActivity() {
-    private val CONTACTS_CHANNEL = "com.primocys.chat/contacts"
+    private val CONTACTS_CHANNEL = "com.cheetanews.chat/contacts"
     private val AUDIO_CHANNEL = "primocys.call.audio"
     private val NOTIFICATION_CHANNEL = "primocys.call.notification"
     private val DEVICE_PROFILE_CHANNEL = "primocys.device.profile"

@@ -1,4 +1,4 @@
-package com.primocys.chat
+package com.cheetanews.chat
 
 import android.app.Notification
 import android.app.NotificationChannel

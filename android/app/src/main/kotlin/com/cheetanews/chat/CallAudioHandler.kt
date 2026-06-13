@@ -1,4 +1,4 @@
-package com.primocys.chat
+package com.cheetanews.chat
 
 import android.content.Context
 import android.media.AudioManager

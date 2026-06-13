@@ -37,7 +37,7 @@ import UIKit
 
         // ==================== CONTACTS CHANNEL ====================
         let contactChannel = FlutterMethodChannel(
-            name: "com.primocys.chat/contacts",
+            name: "com.cheetanews.chat/contacts",
             binaryMessenger: controller.binaryMessenger)
 
         contactChannel.setMethodCallHandler({
@@ -234,7 +234,7 @@ import UIKit
     // =============================================================================
 
     private func clearFlutterSecureStorageKeychain() {
-        let bundleId = Bundle.main.bundleIdentifier ?? "com.primocys.chat"
+        let bundleId = Bundle.main.bundleIdentifier ?? "com.cheetanews.chat"
 
         // Method 1: Clear all generic password items (most thorough)
         let clearAllQuery: [String: Any] = [

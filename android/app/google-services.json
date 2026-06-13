@@ -1,22 +1,22 @@
 {
   "project_info": {
-    "project_number": "PROJECT_NUMBER_PLACEHOLDER",
-    "firebase_url": "https://PROJECT_ID_PLACEHOLDER.firebaseio.com",
-    "project_id": "PROJECT_ID_PLACEHOLDER",
-    "storage_bucket": "PROJECT_ID_PLACEHOLDER.appspot.com"
+    "project_number": "933251675490",
+    "project_id": "cheethanews",
+    "firebase_url": "https://cheetanews.firebaseio.com",
+    "storage_bucket": "cheethanews.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "MOBILE_SDK_APP_ID_PLACEHOLDER",
+        "mobilesdk_app_id": "1:933251675490:android:d01142d75d27efa910a83b",
         "android_client_info": {
-          "package_name": "YOUR_PACKAGE_NAME"
+          "package_name": "com.cheetanews.chat"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "API_KEY_PLACEHOLDER"
+          "current_key": "AIzaSyAdtj90frIeeItn4ikGhmEqivf1jhqou10"
         }
       ],
       "services": {
