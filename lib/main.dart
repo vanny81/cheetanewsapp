@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -31,13 +32,17 @@ Future<void> main() async {
 
   try {
     // Firebase init (for Analytics only)
-    await Firebase.initializeApp();
-    logger.i('Firebase initialized successfully');
+    if (!kIsWeb) {
+      await Firebase.initializeApp();
+      logger.i('Firebase initialized successfully');
 
-    // Initialize Firebase Analytics
-    FirebaseAnalytics analytics = FirebaseAnalytics.instance;
-    await analytics.setAnalyticsCollectionEnabled(true);
-    logger.i('Firebase Analytics initialized successfully');
+      // Initialize Firebase Analytics
+      FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+      await analytics.setAnalyticsCollectionEnabled(true);
+      logger.i('Firebase Analytics initialized successfully');
+    } else {
+      logger.i('Web platform detected: skipping Firebase initialization');
+    }
 
     // App version num fetch
     await getAppVersion();

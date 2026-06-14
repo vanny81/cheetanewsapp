@@ -1,0 +1,538 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:whoxa/featuers/auth/provider/stealth_provider.dart';
+import 'package:whoxa/utils/preference_key/constant/app_routes.dart';
+import 'package:whoxa/utils/preference_key/constant/app_colors.dart';
+
+class PaywallScreen extends StatefulWidget {
+  const PaywallScreen({super.key});
+
+  @override
+  State<PaywallScreen> createState() => _PaywallScreenState();
+}
+
+class _PaywallScreenState extends State<PaywallScreen> {
+  bool _isInitializingPayment = false;
+  final GlobalKey _webViewKey = GlobalKey();
+  int _selectedPackageIndex = 0;
+
+  final List<Map<String, dynamic>> _packages = [
+    {
+      "name": "Standard",
+      "price": "ZAR 149",
+      "period": "monthly",
+      "description": "Perfect for single secure users",
+    },
+    {
+      "name": "Couples",
+      "price": "R 199",
+      "period": "month",
+      "description": "Secure line for you and your partner",
+    },
+    {
+      "name": "Annual (couples)",
+      "price": "R 1499",
+      "period": "year",
+      "description": "Best value for year-round protection",
+    },
+  ];
+
+  // Simulated subscription activation for testing
+  void _simulateSubscriptionSuccess() async {
+    final stealthProvider = Provider.of<StealthProvider>(context, listen: false);
+    await stealthProvider.setSubscriptionActive(true);
+    if (!mounted) return;
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Subscription activated successfully!"),
+        backgroundColor: Colors.green,
+      ),
+    );
+
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      AppRoutes.tabbar,
+      (route) => false,
+    );
+  }
+
+  // Real PayStack Checkout WebView Loader
+  // ignore: unused_element
+  void _openPaystackGateway(String url) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: const BoxDecoration(
+                  color: Color(0xff121212),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Secure PayStack Payment",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              // WebView
+              Expanded(
+                child: InAppWebView(
+                  key: _webViewKey,
+                  initialUrlRequest: URLRequest(url: WebUri(url)),
+                  initialSettings: InAppWebViewSettings(
+                    useShouldOverrideUrlLoading: true,
+                    mediaPlaybackRequiresUserGesture: false,
+                  ),
+                  onLoadStop: (controller, loadedUrl) async {
+                    final urlString = loadedUrl?.toString() ?? "";
+                    debugPrint("WebView Loaded URL: $urlString");
+                    
+                    // Detect PayStack success callback/redirection
+                    if (urlString.contains("/payment/success") || 
+                        urlString.contains("callback") || 
+                        urlString.contains("payment-success")) {
+                      Navigator.pop(context); // Close WebView sheet
+                      _simulateSubscriptionSuccess();
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _handleRealSubscribe() {
+    setState(() {
+      _isInitializingPayment = true;
+    });
+
+    // Simulate Server API Call (Initialize Paystack Transaction)
+    // In production, this POSTs to /api/payment/initialize-subscription
+    // and gets back: { status: true, data: { authorization_url: "https://checkout.paystack.com/..." } }
+    Timer(const Duration(seconds: 2), () {
+      if (!mounted) return;
+      setState(() {
+        _isInitializingPayment = false;
+      });
+
+      // Let's use simulation since gateway URL is a mock placeholder
+      _showDemoPaymentDialog();
+    });
+  }
+
+  void _showDemoPaymentDialog() {
+    final selectedPackage = _packages[_selectedPackageIndex];
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1e1e1e),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          "PayStack Checkout",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          "This completes the PayStack sandbox transaction. Tap 'Confirm' to authorize payment of ${selectedPackage['price']} and update subscription.",
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel", style: TextStyle(color: Colors.white38)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.appPriSecColor.primaryColor,
+              foregroundColor: Colors.black,
+            ),
+            onPressed: () {
+              Navigator.pop(context); // Close Dialog
+              _simulateSubscriptionSuccess();
+            },
+            child: const Text("Confirm Payment", style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xff121212),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.white70),
+            onPressed: () {
+              // Navigates back to the camouflage layer
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                AppRoutes.newsFeed,
+                (route) => false,
+              );
+            },
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 12),
+              
+              // Paywall Badge/Icon
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.appPriSecColor.primaryColor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.workspace_premium,
+                  size: 64,
+                  color: Color(0xffFCC604),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Title
+              const Text(
+                "Secure Vault Features",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              
+              // Subtitle
+              const Text(
+                "Trial Period Expired (3-Day Limit)",
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Feature List
+              _buildFeatureRow(
+                icon: Icons.security,
+                title: "End-to-End Encryption",
+                subtitle: "Full privacy protection across all channels.",
+              ),
+              const SizedBox(height: 20),
+              _buildFeatureRow(
+                icon: Icons.notifications_off,
+                title: "Camouflaged Notifications",
+                subtitle: "Real news titles on OS lock screen alerts.",
+              ),
+              const SizedBox(height: 20),
+              _buildFeatureRow(
+                icon: Icons.key_sharp,
+                title: "PIN Bypass Protection",
+                subtitle: "Automated session timers and instant panic locks.",
+              ),
+
+              const SizedBox(height: 36),
+
+              // Subscription package selector (vibrant visual cards)
+              Column(
+                children: List.generate(_packages.length, (index) {
+                  final package = _packages[index];
+                  final isSelected = _selectedPackageIndex == index;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedPackageIndex = index;
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? const Color(0xff1C281F) // Premium subtle dark green
+                            : const Color(0xff1C1C1E),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.appPriSecColor.primaryColor
+                              : Colors.white.withValues(alpha: 0.08),
+                          width: isSelected ? 2.0 : 1.0,
+                        ),
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: AppColors.appPriSecColor.primaryColor.withValues(alpha: 0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                )
+                              ]
+                            : null,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.appPriSecColor.primaryColor
+                                    : Colors.white38,
+                                width: 2,
+                              ),
+                              color: isSelected
+                                  ? AppColors.appPriSecColor.primaryColor
+                                  : Colors.transparent,
+                            ),
+                            child: isSelected
+                                ? const Icon(
+                                    Icons.check,
+                                    size: 12,
+                                    color: Colors.black,
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  package['name'],
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  package['description'],
+                                  style: const TextStyle(
+                                    color: Colors.white38,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                package['price'],
+                                style: TextStyle(
+                                  color: isSelected ? AppColors.appPriSecColor.primaryColor : Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              Text(
+                                "/${package['period']}",
+                                style: const TextStyle(
+                                  color: Colors.white30,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Checkout Action Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: AppColors.subscriptionGradient,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.green.withValues(alpha: 0.2),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    )
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      "SELECTED PLAN: ${_packages[_selectedPackageIndex]['name'].toUpperCase()}",
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          _packages[_selectedPackageIndex]['price'],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 32,
+                          ),
+                        ),
+                        Text(
+                          " / ${_packages[_selectedPackageIndex]['period']}",
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(color: Colors.white24, height: 1),
+                    const SizedBox(height: 16),
+                    _isInitializingPayment
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation(Colors.white),
+                            ),
+                          )
+                        : SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
+                              ),
+                              onPressed: _handleRealSubscribe,
+                              child: const Text(
+                                "Subscribe via PayStack",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+              // Bypass / Simulate link
+              TextButton(
+                onPressed: () {
+                  _simulateSubscriptionSuccess();
+                },
+                child: const Text(
+                  "Bypass/Simulate Success (Demo Mode)",
+                  style: TextStyle(color: Colors.white30, decoration: TextDecoration.underline),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureRow({required IconData icon, required String title, required String subtitle}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xff1e1e1e),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Icon(icon, color: const Color(0xffFCC604), size: 22),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: Colors.white38,
+                  fontSize: 12,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}

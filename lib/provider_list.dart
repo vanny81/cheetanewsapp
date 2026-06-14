@@ -3,6 +3,7 @@ import 'package:provider/single_child_widget.dart';
 import 'package:whoxa/core/services/socket/socket_event_controller.dart';
 import 'package:whoxa/dependency_injection.dart';
 import 'package:whoxa/featuers/auth/provider/auth_provider.dart';
+import 'package:whoxa/featuers/auth/provider/stealth_provider.dart';
 import 'package:whoxa/featuers/chat/group/provider/group_provider.dart';
 import 'package:whoxa/featuers/chat/provider/chat_provider.dart';
 import 'package:whoxa/featuers/chat/provider/archive_chat_provider.dart';
@@ -26,6 +27,9 @@ List<SingleChildWidget> appProviders = [
     create: (_) => getIt<ProjectConfigProvider>(),
   ),
   ChangeNotifierProvider<AuthProvider>(create: (_) => getIt<AuthProvider>()),
+  ChangeNotifierProvider<StealthProvider>(
+    create: (_) => getIt<StealthProvider>(),
+  ),
   ChangeNotifierProvider<TabbarProvider>(
     create: (_) => getIt<TabbarProvider>(),
   ),

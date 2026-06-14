@@ -6,6 +6,9 @@ import 'package:whoxa/featuers/chat/provider/chat_provider.dart';
 import 'package:whoxa/utils/logger.dart';
 import 'package:whoxa/utils/preference_key/preference_key.dart';
 import 'package:whoxa/utils/preference_key/sharedpref_key.dart';
+import 'package:whoxa/core/navigation_helper.dart';
+import 'package:whoxa/utils/preference_key/constant/app_routes.dart';
+import 'package:whoxa/featuers/auth/provider/stealth_provider.dart';
 
 /// AppLifecycleManager - FIXED VERSION
 /// Manages app lifecycle events and maintains socket connections appropriately
@@ -125,6 +128,30 @@ class AppLifecycleManagerState extends State<AppLifecycleManager>
     if (!_isUserLoggedIn) {
       _logger.i('User not logged in, skipping socket operations');
       return;
+    }
+
+    // Stealth App Timeout Check:
+    // If the user has minimized/backgrounded the app for more than 2 minutes (120 seconds),
+    // lock the secure chat layer and redirect them back to the News Feed.
+    if (_lastPausedTime != null) {
+      final timeInBackground = DateTime.now().difference(_lastPausedTime!);
+      if (timeInBackground.inSeconds > 120) {
+        _logger.i('Stealth Layer: App backgrounded for ${timeInBackground.inSeconds}s (limit: 120s). Locking session.');
+        try {
+          final stealthProvider = GetIt.instance<StealthProvider>();
+          stealthProvider.lock();
+          
+          final navigator = NavigationHelper.navigator;
+          if (navigator != null) {
+            navigator.pushNamedAndRemoveUntil(
+              AppRoutes.newsFeed,
+              (route) => false,
+            );
+          }
+        } catch (e) {
+          _logger.e('Error performing stealth timeout lock', e);
+        }
+      }
     }
 
     // Sync block status when app comes to foreground to catch changes that happened while inactive

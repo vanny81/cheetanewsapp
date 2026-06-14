@@ -19,6 +19,7 @@ import 'package:whoxa/utils/preference_key/constant/app_text_style.dart';
 import 'package:whoxa/utils/preference_key/constant/app_theme_manage.dart';
 import 'package:whoxa/utils/preference_key/constant/strings.dart';
 import 'package:whoxa/widgets/global.dart';
+import 'package:whoxa/widgets/panic_lock_button.dart';
 
 class NewTabbarScreen extends StatefulWidget {
   const NewTabbarScreen({super.key});
@@ -55,205 +56,208 @@ class _NewTabbarScreenState extends State<NewTabbarScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      floatingActionButtonLocation: FloatingActionButtonLocation.miniEndDocked,
-      body: Consumer2<TabbarProvider, LanguageProvider>(
-        builder: (context, tabbarProvider, languageProvider, _) {
-          return handlePages[tabbarProvider.currentIndex];
-        },
-      ),
-      bottomNavigationBar: Consumer3<
-        TabbarProvider,
-        ThemeProvider,
-        LanguageProvider
-      >(
-        builder: (context, tabbarProvider, themeProvider, languageProvider, _) {
-          return Container(
-            height:
-                SizeConfig.sizedBoxHeight(75) +
-                MediaQuery.of(context).padding.bottom,
-            padding: SizeConfig.getPaddingSymmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-              border: Border.all(color: AppThemeManage.appTheme.transprent),
-              color: AppThemeManage.appTheme.scaffoldBackColor,
-              boxShadow: [
-                BoxShadow(
-                  blurRadius: 36.6,
-                  spreadRadius: 0,
-                  offset: const Offset(0, 4),
-                  color: AppColors.shadowColor.c000000.withValues(alpha: 0.40),
+    return PanicLockWrapper(
+      bottomOffset: 100,
+      child: Scaffold(
+        extendBody: true,
+        floatingActionButtonLocation: FloatingActionButtonLocation.miniEndDocked,
+        body: Consumer2<TabbarProvider, LanguageProvider>(
+          builder: (context, tabbarProvider, languageProvider, _) {
+            return handlePages[tabbarProvider.currentIndex];
+          },
+        ),
+        bottomNavigationBar: Consumer3<
+          TabbarProvider,
+          ThemeProvider,
+          LanguageProvider
+        >(
+          builder: (context, tabbarProvider, themeProvider, languageProvider, _) {
+            return Container(
+              height:
+                  SizeConfig.sizedBoxHeight(75) +
+                  MediaQuery.of(context).padding.bottom,
+              padding: SizeConfig.getPaddingSymmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
                 ),
-              ],
-            ),
-            child: BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              elevation: 0,
-              backgroundColor: AppThemeManage.appTheme.black10,
-              selectedItemColor: AppThemeManage.appTheme.darkWhiteColor,
-              unselectedItemColor: Colors.black,
-              showSelectedLabels: true,
-              showUnselectedLabels: true,
-              currentIndex: tabbarProvider.currentIndex,
-              selectedLabelStyle: AppTypography.footerText10(
-                context,
-              ).copyWith(color: AppThemeManage.appTheme.darkWhiteColor),
-              onTap: (index) {
-                setState(() {
-                  tabbarProvider.currentIndex = index;
-                  if (index == 0 || index == 4) {
-                    Provider.of<ChatProvider>(
-                      context,
-                      listen: false,
-                    ).countApi();
-                  }
-                });
-              },
-              items: [
-                tabbarProvider.currentIndex == 0
-                    ? BottomNavigationBarItem(
-                      icon: Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: newTabbarFooterIcon(
-                          svgImageFill: AppAssets.bottomNavIcons.homeColor,
-                          image: AppAssets.bottomNavIcons.homeUnfill,
-                          padding: SizeConfig.getPaddingOnly(left: 1),
-                          paddingColor: SizeConfig.getPaddingOnly(top: 2.5),
-                        ),
-                      ),
-                      label: AppString.bottomNavString.chat,
-                    )
-                    : BottomNavigationBarItem(
-                      icon: Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: SvgPicture.asset(
-                          AppAssets.bottomNavIcons.homeUnfill,
-                          colorFilter: ColorFilter.mode(
-                            AppThemeManage.appTheme.darkWhiteColor,
-                            BlendMode.srcIn,
-                          ),
-                          height: SizeConfig.safeHeight(3.5),
-                        ),
-                      ),
-                      label: '',
-                    ),
-                tabbarProvider.currentIndex == 1
-                    ? BottomNavigationBarItem(
-                      icon: Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: newTabbarFooterIcon(
-                          svgImageFill: AppAssets.bottomNavIcons.statusColor,
-                          image: AppAssets.bottomNavIcons.status,
-                          padding: SizeConfig.getPaddingOnly(left: 2),
-                          paddingColor: SizeConfig.getPaddingOnly(top: 2.5),
-                        ),
-                      ),
-                      label: AppString.bottomNavString.status,
-                    )
-                    : BottomNavigationBarItem(
-                      icon: Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: SvgPicture.asset(
-                          AppAssets.bottomNavIcons.status,
-                          height: SizeConfig.safeHeight(3.5),
-                          colorFilter: ColorFilter.mode(
-                            AppThemeManage.appTheme.darkWhiteColor,
-                            BlendMode.srcIn,
+                border: Border.all(color: AppThemeManage.appTheme.transprent),
+                color: AppThemeManage.appTheme.scaffoldBackColor,
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 36.6,
+                    spreadRadius: 0,
+                    offset: const Offset(0, 4),
+                    color: AppColors.shadowColor.c000000.withValues(alpha: 0.40),
+                  ),
+                ],
+              ),
+              child: BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
+                elevation: 0,
+                backgroundColor: AppThemeManage.appTheme.black10,
+                selectedItemColor: AppThemeManage.appTheme.darkWhiteColor,
+                unselectedItemColor: Colors.black,
+                showSelectedLabels: true,
+                showUnselectedLabels: true,
+                currentIndex: tabbarProvider.currentIndex,
+                selectedLabelStyle: AppTypography.footerText10(
+                  context,
+                ).copyWith(color: AppThemeManage.appTheme.darkWhiteColor),
+                onTap: (index) {
+                  setState(() {
+                    tabbarProvider.currentIndex = index;
+                    if (index == 0 || index == 4) {
+                      Provider.of<ChatProvider>(
+                        context,
+                        listen: false,
+                      ).countApi();
+                    }
+                  });
+                },
+                items: [
+                  tabbarProvider.currentIndex == 0
+                      ? BottomNavigationBarItem(
+                        icon: Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: newTabbarFooterIcon(
+                            svgImageFill: AppAssets.bottomNavIcons.homeColor,
+                            image: AppAssets.bottomNavIcons.homeUnfill,
+                            padding: SizeConfig.getPaddingOnly(left: 1),
+                            paddingColor: SizeConfig.getPaddingOnly(top: 2.5),
                           ),
                         ),
-                      ),
-                      label: '',
-                    ),
-                tabbarProvider.currentIndex == 2
-                    ? BottomNavigationBarItem(
-                      icon: Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: newTabbarFooterIcon(
-                          svgImageFill: AppAssets.bottomNavIcons.callColor,
-                          image: AppAssets.bottomNavIcons.callUnfill,
-                          height: SizeConfig.safeHeight(3.5),
-                          padding: SizeConfig.getPaddingOnly(left: 1.3),
-                          paddingColor: SizeConfig.getPaddingOnly(top: 2),
-                        ),
-                      ),
-                      label: AppString.bottomNavString.call,
-                    )
-                    : BottomNavigationBarItem(
-                      icon: Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: SvgPicture.asset(
-                          AppAssets.bottomNavIcons.call1,
-                          height: SizeConfig.safeHeight(3.5),
-                          colorFilter: ColorFilter.mode(
-                            AppThemeManage.appTheme.darkWhiteColor,
-                            BlendMode.srcIn,
+                        label: AppString.bottomNavString.chat,
+                      )
+                      : BottomNavigationBarItem(
+                        icon: Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: SvgPicture.asset(
+                            AppAssets.bottomNavIcons.homeUnfill,
+                            colorFilter: ColorFilter.mode(
+                              AppThemeManage.appTheme.darkWhiteColor,
+                              BlendMode.srcIn,
+                            ),
+                            height: SizeConfig.safeHeight(3.5),
                           ),
                         ),
+                        label: '',
                       ),
-                      label: '',
-                    ),
-                tabbarProvider.currentIndex == 3
-                    ? BottomNavigationBarItem(
-                      icon: Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: newTabbarFooterIcon(
-                          svgImageFill: AppAssets.bottomNavIcons.contactColor,
-                          image: AppAssets.bottomNavIcons.contact,
-                          padding: SizeConfig.getPaddingOnly(left: 2.5),
-                          paddingColor: SizeConfig.getPaddingOnly(top: 2),
-                        ),
-                      ),
-                      label: AppString.bottomNavString.contact,
-                    )
-                    : BottomNavigationBarItem(
-                      icon: Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: SvgPicture.asset(
-                          AppAssets.bottomNavIcons.contact,
-                          height: SizeConfig.safeHeight(3.5),
-                          colorFilter: ColorFilter.mode(
-                            AppThemeManage.appTheme.darkWhiteColor,
-                            BlendMode.srcIn,
+                  tabbarProvider.currentIndex == 1
+                      ? BottomNavigationBarItem(
+                        icon: Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: newTabbarFooterIcon(
+                            svgImageFill: AppAssets.bottomNavIcons.statusColor,
+                            image: AppAssets.bottomNavIcons.status,
+                            padding: SizeConfig.getPaddingOnly(left: 2),
+                            paddingColor: SizeConfig.getPaddingOnly(top: 2.5),
                           ),
                         ),
-                      ),
-                      label: '',
-                    ),
-                tabbarProvider.currentIndex == 4
-                    ? BottomNavigationBarItem(
-                      icon: Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: newTabbarFooterIcon(
-                          svgImageFill: AppAssets.bottomNavIcons.settingColor,
-                          image: AppAssets.bottomNavIcons.setting,
-                          padding: SizeConfig.getPaddingOnly(left: 1),
-                          paddingColor: SizeConfig.getPaddingOnly(top: 2.5),
-                        ),
-                      ),
-                      label: AppString.bottomNavString.setting,
-                    )
-                    : BottomNavigationBarItem(
-                      icon: Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: SvgPicture.asset(
-                          AppAssets.bottomNavIcons.setting,
-                          height: SizeConfig.safeHeight(3.5),
-                          colorFilter: ColorFilter.mode(
-                            AppThemeManage.appTheme.darkWhiteColor,
-                            BlendMode.srcIn,
+                        label: AppString.bottomNavString.status,
+                      )
+                      : BottomNavigationBarItem(
+                        icon: Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: SvgPicture.asset(
+                            AppAssets.bottomNavIcons.status,
+                            height: SizeConfig.safeHeight(3.5),
+                            colorFilter: ColorFilter.mode(
+                              AppThemeManage.appTheme.darkWhiteColor,
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
+                        label: '',
                       ),
-                      label: '',
-                    ),
-              ],
-            ),
-          );
-        },
+                  tabbarProvider.currentIndex == 2
+                      ? BottomNavigationBarItem(
+                        icon: Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: newTabbarFooterIcon(
+                            svgImageFill: AppAssets.bottomNavIcons.callColor,
+                            image: AppAssets.bottomNavIcons.callUnfill,
+                            height: SizeConfig.safeHeight(3.5),
+                            padding: SizeConfig.getPaddingOnly(left: 1.3),
+                            paddingColor: SizeConfig.getPaddingOnly(top: 2),
+                          ),
+                        ),
+                        label: AppString.bottomNavString.call,
+                      )
+                      : BottomNavigationBarItem(
+                        icon: Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: SvgPicture.asset(
+                            AppAssets.bottomNavIcons.call1,
+                            height: SizeConfig.safeHeight(3.5),
+                            colorFilter: ColorFilter.mode(
+                              AppThemeManage.appTheme.darkWhiteColor,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                        label: '',
+                      ),
+                  tabbarProvider.currentIndex == 3
+                      ? BottomNavigationBarItem(
+                        icon: Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: newTabbarFooterIcon(
+                            svgImageFill: AppAssets.bottomNavIcons.contactColor,
+                            image: AppAssets.bottomNavIcons.contact,
+                            padding: SizeConfig.getPaddingOnly(left: 2.5),
+                            paddingColor: SizeConfig.getPaddingOnly(top: 2),
+                          ),
+                        ),
+                        label: AppString.bottomNavString.contact,
+                      )
+                      : BottomNavigationBarItem(
+                        icon: Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: SvgPicture.asset(
+                            AppAssets.bottomNavIcons.contact,
+                            height: SizeConfig.safeHeight(3.5),
+                            colorFilter: ColorFilter.mode(
+                              AppThemeManage.appTheme.darkWhiteColor,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                        label: '',
+                      ),
+                  tabbarProvider.currentIndex == 4
+                      ? BottomNavigationBarItem(
+                        icon: Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: newTabbarFooterIcon(
+                            svgImageFill: AppAssets.bottomNavIcons.settingColor,
+                            image: AppAssets.bottomNavIcons.setting,
+                            padding: SizeConfig.getPaddingOnly(left: 1),
+                            paddingColor: SizeConfig.getPaddingOnly(top: 2.5),
+                          ),
+                        ),
+                        label: AppString.bottomNavString.setting,
+                      )
+                      : BottomNavigationBarItem(
+                        icon: Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: SvgPicture.asset(
+                            AppAssets.bottomNavIcons.setting,
+                            height: SizeConfig.safeHeight(3.5),
+                            colorFilter: ColorFilter.mode(
+                              AppThemeManage.appTheme.darkWhiteColor,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ),
+                        label: '',
+                      ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }

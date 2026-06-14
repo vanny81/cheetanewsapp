@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:whoxa/featuers/auth/services/onesignal_service.dart';
@@ -14,7 +15,7 @@ class OnboardingProvider extends ChangeNotifier {
 
     // ✅ CRITICAL FIX: Reset permission tracking on fresh starts for iOS
     // This prevents cached states from interfering with actual system permission status
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       debugPrint("🔄 iOS: Resetting permission tracking to sync with system state");
       permissionsGranted.clear();
     }
@@ -147,7 +148,7 @@ class OnboardingProvider extends ChangeNotifier {
     ];
 
     // Add platform-specific permissions
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       // Add Photos permission only for iOS
       permissions.add({
         'permission': Permission.photos,
@@ -163,7 +164,7 @@ class OnboardingProvider extends ChangeNotifier {
     try {
       var status = await Permission.notification.status;
       
-      if (Platform.isIOS) {
+      if (!kIsWeb && Platform.isIOS) {
         // ✅ iOS notification permissions can be provisional, granted, or denied
         // Provisional means notifications are delivered quietly to Notification Center
         bool isGranted = status.isGranted || status.isProvisional;
@@ -184,13 +185,13 @@ class OnboardingProvider extends ChangeNotifier {
   Future<bool> checkPhotoPermission() async {
     try {
       // On iOS, photos permission has different statuses
-      if (Platform.isIOS) {
+      if (!kIsWeb && Platform.isIOS) {
         // ✅ FIXED: Check for limited, added, or full access on iOS
         var status = await Permission.photos.status;
         bool isGranted = status.isGranted || status.isLimited;
         debugPrint("iOS Photos permission status: $status, isGranted: $isGranted");
         return isGranted;
-      } else if (Platform.isAndroid) {
+      } else if (!kIsWeb && Platform.isAndroid) {
         // ✅ IMPROVED: Check multiple media permissions on Android
         var photosStatus = await Permission.photos.status;
         var videosStatus = await Permission.videos.status;
@@ -266,7 +267,7 @@ class OnboardingProvider extends ChangeNotifier {
     }
 
     // For iOS, need specific handling to ensure the prompt shows
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       debugPrint("iOS: Requesting permission: $permissionName");
 
       // Set userInitiatedPermissionRequest to true, iOS requires user-initiated actions
@@ -308,7 +309,7 @@ class OnboardingProvider extends ChangeNotifier {
   // ✅ IMPROVED: Handle iOS notification permission with provisional state
   Future<bool> requestNotificationPermission() async {
     // For iOS, use the specific notification request approach
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       debugPrint("iOS: Requesting notification permission specifically");
 
       try {
@@ -389,7 +390,7 @@ class OnboardingProvider extends ChangeNotifier {
   // ✅ IMPROVED: Special handling for media permissions with iOS limited access
   Future<bool> requestMediaPermission() async {
     // iOS handling - request photos permission with limited access support
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       try {
         // First check if already granted (including limited)
         final status = await Permission.photos.status;
@@ -465,7 +466,7 @@ class OnboardingProvider extends ChangeNotifier {
     final camera = await Permission.camera.status;
     final microphone = await Permission.microphone.status;
 
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       final photos = await Permission.photos.status;
       debugPrint("Photos permission (iOS): $photos");
     } else {
@@ -604,7 +605,7 @@ class OnboardingProvider extends ChangeNotifier {
       case 3:
         permissionName = "Gallery";
         // For gallery, we check different permissions based on platform
-        if (Platform.isIOS) {
+        if (!kIsWeb && Platform.isIOS) {
           isCurrentlyGranted = await checkPhotoPermission();
         } else {
           final photoStatus = await Permission.photos.status;

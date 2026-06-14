@@ -23,9 +23,15 @@ import 'package:whoxa/featuers/story/screens/story_upload.dart';
 import 'package:whoxa/screens/new_tabbar.dart';
 import 'package:whoxa/screens/settings/settings.dart';
 import 'package:whoxa/screens/splash_screen.dart';
+import 'package:whoxa/featuers/news/screens/news_feed_screen.dart';
+import 'package:whoxa/featuers/auth/screens/stealth_pin_screen.dart';
+import 'package:whoxa/featuers/subscription/screens/paywall_screen.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
+  static const String newsFeed = '/news_feed';
+  static const String pinAuth = '/pin_auth';
+  static const String paywall = '/paywall';
   static const String onboarding = '/onboarding';
   static const String sigingMethod = '/sigingMethod';
   static const String login = '/login';
@@ -234,6 +240,12 @@ class AppRoutes {
           settings: settings,
         );
 
+      case newsFeed:
+        return MaterialPageRoute(builder: (_) => const NewsFeedScreen());
+      case pinAuth:
+        return MaterialPageRoute(builder: (_) => const StealthPinScreen());
+      case paywall:
+        return MaterialPageRoute(builder: (_) => const PaywallScreen());
       case '/': // Handle root route
         return MaterialPageRoute(builder: (_) => const SplashScreen());
       default:

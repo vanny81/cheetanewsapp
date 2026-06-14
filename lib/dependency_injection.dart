@@ -13,6 +13,7 @@ import 'package:whoxa/core/services/call_audio_manager.dart';
 import 'package:whoxa/featuers/story/data/story_upload_repo.dart';
 import 'package:whoxa/featuers/auth/data/repositories/login_repository.dart';
 import 'package:whoxa/featuers/auth/provider/auth_provider.dart';
+import 'package:whoxa/featuers/auth/provider/stealth_provider.dart';
 import 'package:whoxa/featuers/auth/services/onesignal_service.dart';
 
 import 'package:whoxa/featuers/chat/group/data/repository/group_repository.dart';
@@ -176,6 +177,7 @@ Future<void> setupDependencies() async {
       () => CallHistoryProvider(getIt<CallHistoryRepository>()),
     );
     getIt.registerFactory(() => LanguageProvider(getIt<LanguageRepository>()));
+    getIt.registerLazySingleton<StealthProvider>(() => StealthProvider());
     logger.i('Feature providers registered');
 
     // ═══════════════════════════════════════════════════════════════════════════

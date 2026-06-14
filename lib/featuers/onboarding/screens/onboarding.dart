@@ -3,6 +3,7 @@
 import 'dart:ui';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -174,7 +175,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         currentPermission = Permission.contacts;
         break;
       case 3:
-        if (Platform.isIOS) {
+        if (!kIsWeb && Platform.isIOS) {
           currentPermission = Permission.photos;
         } else {
           // For Android, check if any of the media permissions are granted
@@ -464,7 +465,7 @@ class _PhotoGalleryPermission {
       builder: (context, provider, child) {
         // Check appropriate permissions based on platform
         bool isMediaGranted =
-            Platform.isIOS
+            (!kIsWeb && Platform.isIOS)
                 ? provider.isPermissionGranted(Permission.photos)
                 : (provider.isPermissionGranted(Permission.photos) ||
                     provider.isPermissionGranted(Permission.videos) ||
