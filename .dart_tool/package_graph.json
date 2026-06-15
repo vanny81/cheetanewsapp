@@ -23,6 +23,7 @@
         "flutter_image_compress",
         "flutter_inappwebview",
         "flutter_local_notifications",
+        "flutter_paystack_plus",
         "flutter_secure_storage",
         "flutter_svg",
         "flutter_webrtc",
@@ -265,6 +266,15 @@
         "firebase_core_web",
         "flutter",
         "meta"
+      ]
+    },
+    {
+      "name": "flutter_paystack_plus",
+      "version": "2.5.0",
+      "dependencies": [
+        "flutter",
+        "http",
+        "webview_flutter"
       ]
     },
     {
@@ -1177,6 +1187,16 @@
       ]
     },
     {
+      "name": "webview_flutter",
+      "version": "4.13.1",
+      "dependencies": [
+        "flutter",
+        "webview_flutter_android",
+        "webview_flutter_platform_interface",
+        "webview_flutter_wkwebview"
+      ]
+    },
+    {
       "name": "flutter_inappwebview_windows",
       "version": "0.6.0",
       "dependencies": [
@@ -1973,6 +1993,34 @@
         "firebase_core_platform_interface",
         "flutter",
         "meta"
+      ]
+    },
+    {
+      "name": "webview_flutter_wkwebview",
+      "version": "3.23.0",
+      "dependencies": [
+        "flutter",
+        "meta",
+        "path",
+        "webview_flutter_platform_interface"
+      ]
+    },
+    {
+      "name": "webview_flutter_platform_interface",
+      "version": "2.14.0",
+      "dependencies": [
+        "flutter",
+        "meta",
+        "plugin_platform_interface"
+      ]
+    },
+    {
+      "name": "webview_flutter_android",
+      "version": "4.10.1",
+      "dependencies": [
+        "flutter",
+        "meta",
+        "webview_flutter_platform_interface"
       ]
     },
     {

@@ -8,13 +8,13 @@ import android.os.Vibrator
 import android.os.VibrationEffect
 import android.os.Build
 import android.os.Bundle
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import com.cheetanews.chat.CallAudioManager
 import com.cheetanews.chat.Notifications
 
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
     private val CONTACTS_CHANNEL = "com.cheetanews.chat/contacts"
     private val AUDIO_CHANNEL = "primocys.call.audio"
     private val NOTIFICATION_CHANNEL = "primocys.call.notification"

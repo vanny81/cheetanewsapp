@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get_it/get_it.dart';
+import 'package:flutter_paystack_plus/flutter_paystack_plus.dart';
 import 'package:whoxa/core/api/api_client.dart';
 import 'package:whoxa/featuers/auth/provider/stealth_provider.dart';
 import 'package:whoxa/utils/preference_key/constant/app_routes.dart';
@@ -44,7 +45,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
     },
   ];
 
-  void _verifyAndSyncSubscription() async {
+  void _verifyAndSyncSubscription(String reference) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -67,7 +68,88 @@ class _PaywallScreenState extends State<PaywallScreen> {
       ),
     );
 
-    // Give it a tiny bit of time for webhook or mock callback success to execute on backend
+    try {
+      final apiClient = GetIt.instance<ApiClient>();
+      final verifyResponse = await apiClient.request(
+        "/payment/verify-transaction",
+        method: "POST",
+        body: {"reference": reference},
+      );
+
+      if (!mounted) return;
+      final stealthProvider = Provider.of<StealthProvider>(context, listen: false);
+      await stealthProvider.syncSubscriptionWithBackend();
+
+      if (!mounted) return;
+      Navigator.pop(context); // Close the dialog
+
+      if (verifyResponse != null && verifyResponse['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Subscription activated successfully!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Check if onboarding is completed
+        bool hasCompletedOnboarding = await SecurePrefs.getBool(
+          SecureStorageKeys.PERMISSION,
+        );
+
+        if (!mounted) return;
+
+        if (!hasCompletedOnboarding) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.onboarding,
+            (route) => false,
+          );
+        } else if (authToken.isEmpty) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.login,
+            (route) => false,
+          );
+        } else {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.tabbar,
+            (route) => false,
+          );
+        }
+      } else {
+        _showErrorSnackBar(verifyResponse?['error']?.toString() ?? "Failed to verify transaction.");
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // Close the dialog
+      _showErrorSnackBar("Error verifying payment: $e");
+    }
+  }
+
+  void _verifyAndSyncSubscriptionMock() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const AlertDialog(
+        backgroundColor: Color(0xff121212),
+        content: Row(
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation(Color(0xff00c32b)),
+            ),
+            SizedBox(width: 20),
+            Expanded(
+              child: Text(
+                "Syncing subscription state...",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
     await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
@@ -112,12 +194,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
         );
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Sync completed, but subscription is not yet active. Please try again or wait a moment."),
-          backgroundColor: Colors.amber,
-        ),
-      );
+      _showErrorSnackBar("Verification failed. Please try again.");
     }
   }
 
@@ -153,7 +230,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      "Secure PayStack Payment",
+                      "Secure Mock Checkout",
                       style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                     IconButton(
@@ -172,7 +249,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     useShouldOverrideUrlLoading: true,
                     mediaPlaybackRequiresUserGesture: false,
                   ),
-                  onLoadStop: (controller, loadedUrl) async {
+                  onLoadStop: (controller, loadedUrl) {
                     final urlString = loadedUrl?.toString() ?? "";
                     debugPrint("WebView Loaded URL: $urlString");
                     
@@ -181,7 +258,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                         urlString.contains("payment-success")) {
                       if (mounted) {
                         Navigator.pop(context); // Close WebView sheet
-                        _verifyAndSyncSubscription();
+                        _verifyAndSyncSubscriptionMock();
                       }
                     }
                   },
@@ -256,11 +333,47 @@ class _PaywallScreenState extends State<PaywallScreen> {
       });
 
       if (response != null && response['success'] == true) {
-        final authorizationUrl = response['data']?['authorization_url']?.toString();
-        if (authorizationUrl != null && authorizationUrl.isNotEmpty) {
+        final data = response['data'];
+        final authorizationUrl = data?['authorization_url']?.toString();
+        final accessCode = data?['access_code']?.toString();
+        final publicKey = data?['publicKey']?.toString();
+        final reference = data?['reference']?.toString();
+
+        if (accessCode != null && 
+            accessCode.isNotEmpty && 
+            publicKey != null && 
+            publicKey.isNotEmpty && 
+            authorizationUrl != null && 
+            !authorizationUrl.contains("mock-checkout")) {
+          // Launch real Paystack Flutter SDK
+          final priceInKobo = _selectedPackageIndex == 0
+              ? 14900
+              : (_selectedPackageIndex == 1 ? 19900 : 149900);
+
+          final userEmail = email.isNotEmpty ? email : "user@cheetanews.com";
+
+          await FlutterPaystackPlus.openPaystackPopup(
+            context: context,
+            customerEmail: userEmail,
+            amount: priceInKobo.toString(),
+            reference: reference ?? 'ref_${DateTime.now().millisecondsSinceEpoch}',
+            publicKey: publicKey,
+            authorizationUrl: authorizationUrl,
+            onClosed: () {
+              debugPrint('Paystack SDK window closed');
+            },
+            onSuccess: () {
+              debugPrint('Paystack SDK payment success!');
+              if (reference != null) {
+                _verifyAndSyncSubscription(reference);
+              }
+            },
+          );
+        } else if (authorizationUrl != null && authorizationUrl.isNotEmpty) {
+          // Fallback to webview for mock checkout
           _openPaystackGateway(authorizationUrl);
         } else {
-          _showErrorSnackBar("Authorization URL not found in response.");
+          _showErrorSnackBar("Unable to load checkout gateway.");
         }
       } else {
         _showErrorSnackBar(response?['error']?.toString() ?? "Failed to initialize payment.");

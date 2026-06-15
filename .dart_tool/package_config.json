@@ -458,6 +458,12 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "flutter_paystack_plus",
+      "rootUri": "file:///C:/Users/IamYi/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_paystack_plus-2.5.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
       "name": "flutter_plugin_android_lifecycle",
       "rootUri": "file:///C:/Users/IamYi/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.31",
       "packageUri": "lib/",
@@ -1332,6 +1338,30 @@
       "rootUri": "file:///C:/Users/IamYi/AppData/Local/Pub/Cache/hosted/pub.dev/webrtc_interface-1.5.1",
       "packageUri": "lib/",
       "languageVersion": "2.12"
+    },
+    {
+      "name": "webview_flutter",
+      "rootUri": "file:///C:/Users/IamYi/AppData/Local/Pub/Cache/hosted/pub.dev/webview_flutter-4.13.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
+      "name": "webview_flutter_android",
+      "rootUri": "file:///C:/Users/IamYi/AppData/Local/Pub/Cache/hosted/pub.dev/webview_flutter_android-4.10.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "webview_flutter_platform_interface",
+      "rootUri": "file:///C:/Users/IamYi/AppData/Local/Pub/Cache/hosted/pub.dev/webview_flutter_platform_interface-2.14.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "webview_flutter_wkwebview",
+      "rootUri": "file:///C:/Users/IamYi/AppData/Local/Pub/Cache/hosted/pub.dev/webview_flutter_wkwebview-3.23.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
     },
     {
       "name": "win32",
