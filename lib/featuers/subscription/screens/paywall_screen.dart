@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:get_it/get_it.dart';
+import 'package:whoxa/core/api/api_client.dart';
 import 'package:whoxa/featuers/auth/provider/stealth_provider.dart';
 import 'package:whoxa/utils/preference_key/constant/app_routes.dart';
 import 'package:whoxa/utils/preference_key/constant/app_colors.dart';
@@ -42,49 +44,84 @@ class _PaywallScreenState extends State<PaywallScreen> {
     },
   ];
 
-  // Simulated subscription activation for testing
-  void _simulateSubscriptionSuccess() async {
-    final stealthProvider = Provider.of<StealthProvider>(context, listen: false);
-    await stealthProvider.setSubscriptionActive(true);
-    if (!mounted) return;
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Subscription activated successfully!"),
-        backgroundColor: Colors.green,
+  void _verifyAndSyncSubscription() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const AlertDialog(
+        backgroundColor: Color(0xff121212),
+        content: Row(
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation(Color(0xff00c32b)),
+            ),
+            SizedBox(width: 20),
+            Expanded(
+              child: Text(
+                "Syncing subscription state...",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
       ),
     );
 
-    // Check if onboarding is completed
-    bool hasCompletedOnboarding = await SecurePrefs.getBool(
-      SecureStorageKeys.PERMISSION,
-    );
+    // Give it a tiny bit of time for webhook or mock callback success to execute on backend
+    await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
+    final stealthProvider = Provider.of<StealthProvider>(context, listen: false);
+    await stealthProvider.syncSubscriptionWithBackend();
 
-    if (!hasCompletedOnboarding) {
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        AppRoutes.onboarding,
-        (route) => false,
+    if (!mounted) return;
+    Navigator.pop(context); // Close the dialog
+
+    if (stealthProvider.isSubscribed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Subscription activated successfully!"),
+          backgroundColor: Colors.green,
+        ),
       );
-    } else if (authToken.isEmpty) {
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        AppRoutes.login,
-        (route) => false,
+
+      // Check if onboarding is completed
+      bool hasCompletedOnboarding = await SecurePrefs.getBool(
+        SecureStorageKeys.PERMISSION,
       );
+
+      if (!mounted) return;
+
+      if (!hasCompletedOnboarding) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.onboarding,
+          (route) => false,
+        );
+      } else if (authToken.isEmpty) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.login,
+          (route) => false,
+        );
+      } else {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.tabbar,
+          (route) => false,
+        );
+      }
     } else {
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        AppRoutes.tabbar,
-        (route) => false,
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Sync completed, but subscription is not yet active. Please try again or wait a moment."),
+          backgroundColor: Colors.amber,
+        ),
       );
     }
   }
 
   // Real PayStack Checkout WebView Loader
-  // ignore: unused_element
   void _openPaystackGateway(String url) {
     showModalBottomSheet(
       context: context,
@@ -141,10 +178,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     
                     // Detect PayStack success callback/redirection
                     if (urlString.contains("/payment/success") || 
-                        urlString.contains("callback") || 
                         urlString.contains("payment-success")) {
-                      Navigator.pop(context); // Close WebView sheet
-                      _simulateSubscriptionSuccess();
+                      if (mounted) {
+                        Navigator.pop(context); // Close WebView sheet
+                        _verifyAndSyncSubscription();
+                      }
                     }
                   },
                 ),
@@ -153,7 +191,12 @@ class _PaywallScreenState extends State<PaywallScreen> {
           ),
         );
       },
-    );
+    ).then((_) {
+      if (!mounted) return;
+      // Sync subscription state when webview sheet is closed (just in case they completed but closed early)
+      final stealthProvider = Provider.of<StealthProvider>(context, listen: false);
+      stealthProvider.syncSubscriptionWithBackend();
+    });
   }
 
   void _handleContinue() async {
@@ -189,57 +232,54 @@ class _PaywallScreenState extends State<PaywallScreen> {
     }
   }
 
-  void _handleRealSubscribe() {
+  void _handleRealSubscribe() async {
     setState(() {
       _isInitializingPayment = true;
     });
 
-    // Simulate Server API Call (Initialize Paystack Transaction)
-    // In production, this POSTs to /api/payment/initialize-subscription
-    // and gets back: { status: true, data: { authorization_url: "https://checkout.paystack.com/..." } }
-    Timer(const Duration(seconds: 2), () {
+    try {
+      final apiClient = GetIt.instance<ApiClient>();
+      final planName = _selectedPackageIndex == 0
+          ? 'standard'
+          : (_selectedPackageIndex == 1 ? 'couples' : 'annual');
+
+      final response = await apiClient.request(
+        "/payment/initialize-subscription",
+        method: "POST",
+        body: {"plan": planName},
+      );
+
       if (!mounted) return;
+
       setState(() {
         _isInitializingPayment = false;
       });
 
-      // Let's use simulation since gateway URL is a mock placeholder
-      _showDemoPaymentDialog();
-    });
+      if (response != null && response['success'] == true) {
+        final authorizationUrl = response['data']?['authorization_url']?.toString();
+        if (authorizationUrl != null && authorizationUrl.isNotEmpty) {
+          _openPaystackGateway(authorizationUrl);
+        } else {
+          _showErrorSnackBar("Authorization URL not found in response.");
+        }
+      } else {
+        _showErrorSnackBar(response?['error']?.toString() ?? "Failed to initialize payment.");
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isInitializingPayment = false;
+      });
+      _showErrorSnackBar("Error initializing payment: $e");
+    }
   }
 
-  void _showDemoPaymentDialog() {
-    final selectedPackage = _packages[_selectedPackageIndex];
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff1e1e1e),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          "PayStack Checkout",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        content: Text(
-          "This completes the PayStack sandbox transaction. Tap 'Confirm' to authorize payment of ${selectedPackage['price']} and update subscription.",
-          style: const TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: Colors.white38)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.appPriSecColor.primaryColor,
-              foregroundColor: Colors.black,
-            ),
-            onPressed: () {
-              Navigator.pop(context); // Close Dialog
-              _simulateSubscriptionSuccess();
-            },
-            child: const Text("Confirm Payment", style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
+  void _showErrorSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
       ),
     );
   }
@@ -601,18 +641,6 @@ class _PaywallScreenState extends State<PaywallScreen> {
         ),
       ),
 
-      const SizedBox(height: 24),
-              // Bypass / Simulate link
-              TextButton(
-                onPressed: () {
-                  _simulateSubscriptionSuccess();
-                },
-                child: const Text(
-                  "Bypass/Simulate Success (Demo Mode)",
-                  style: TextStyle(color: Colors.white30, decoration: TextDecoration.underline),
-                ),
-              ),
-              const SizedBox(height: 12),
             ],
           ),
         ),

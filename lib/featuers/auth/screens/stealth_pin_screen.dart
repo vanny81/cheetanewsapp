@@ -135,7 +135,6 @@ class _StealthPinScreenState extends State<StealthPinScreen>
     if (!mounted) return;
 
     final isSubscribed = stealthProvider.isSubscribed;
-    final isTrialActive = stealthProvider.isTrialActive;
     final isLoggedIn = authToken.isNotEmpty;
 
     // Check if onboarding is completed
