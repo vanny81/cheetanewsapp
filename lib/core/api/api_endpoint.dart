@@ -4,6 +4,9 @@ class ApiEndpoints {
   static const String baseUrl = 'http://169.239.183.69:3000/api';
   static const String socketUrl = 'http://169.239.183.69:3000';
 
+  //static const String baseUrl = 'http://127.0.0.1:3047/api';
+  //static const String socketUrl = 'http://127.0.0.1:3047';
+
   static const String projectConfig = "/config/";
   static const String registerEmail = "/users/signup";
   static const String registerPhone = "/users/signup";

@@ -527,7 +527,7 @@ class CallNotificationService {
 
       // Initialize with settings
       await _localNotifications!.initialize(
-        initializationSettings,
+        settings: initializationSettings,
         onDidReceiveNotificationResponse: _onNotificationTapped,
       );
 
@@ -730,10 +730,10 @@ class CallNotificationService {
 
       // Show the notification
       await _localNotifications!.show(
-        callNotificationId,
-        title,
-        body,
-        notificationDetails,
+        id: callNotificationId,
+        title: title,
+        body: body,
+        notificationDetails: notificationDetails,
         payload: payload,
       );
 
@@ -802,10 +802,10 @@ class CallNotificationService {
       String payload = 'active_call|$callId|$callType|$callerName';
 
       await _localNotifications!.show(
-        callNotificationId + 1, // Different ID for active call
-        title,
-        body,
-        NotificationDetails(android: androidDetails, iOS: iosDetails),
+        id: callNotificationId + 1, // Different ID for active call
+        title: title,
+        body: body,
+        notificationDetails: NotificationDetails(android: androidDetails, iOS: iosDetails),
         payload: payload,
       );
     } catch (e) {
@@ -840,9 +840,9 @@ class CallNotificationService {
       _cancelCallNotificationTimer();
 
       if (_localNotifications != null) {
-        await _localNotifications!.cancel(callNotificationId);
+        await _localNotifications!.cancel(id: callNotificationId);
         await _localNotifications!.cancel(
-          callNotificationId + 1,
+          id: callNotificationId + 1,
         ); // Active call notification
         _logger.i('Call notifications dismissed');
       }
@@ -1052,10 +1052,10 @@ class CallNotificationService {
       );
 
       await _localNotifications!.show(
-        DateTime.now().millisecondsSinceEpoch.remainder(100000),
-        title,
-        body,
-        notificationDetails,
+        id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
+        title: title,
+        body: body,
+        notificationDetails: notificationDetails,
         payload: payload,
       );
     } catch (e) {
@@ -1119,10 +1119,10 @@ class CallNotificationService {
 
       // Show silent notification that only plays sound
       await _localNotifications!.show(
-        callNotificationId + 999, // Different ID to avoid conflicts
-        '', // Empty title
-        '', // Empty body
-        notificationDetails,
+        id: callNotificationId + 999, // Different ID to avoid conflicts
+        title: '', // Empty title
+        body: '', // Empty body
+        notificationDetails: notificationDetails,
       );
 
       // Start auto-dismiss timer

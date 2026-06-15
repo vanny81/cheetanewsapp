@@ -128,45 +128,69 @@ class _StealthPinScreenState extends State<StealthPinScreen>
   Future<void> _navigateToNextScreen() async {
     if (!mounted) return;
     final stealthProvider = Provider.of<StealthProvider>(context, listen: false);
-    final hasSubscription = await stealthProvider.checkSubscriptionStatus();
+    
+    // Check current subscription/trial status
+    await stealthProvider.checkSubscriptionStatus();
 
     if (!mounted) return;
 
-    if (!hasSubscription) {
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        AppRoutes.paywall,
-        (route) => false,
-      );
-      return;
-    }
+    final isSubscribed = stealthProvider.isSubscribed;
+    final isTrialActive = stealthProvider.isTrialActive;
+    final isLoggedIn = authToken.isNotEmpty;
 
-    // Subscription is valid. Determine if the user is authenticated.
+    // Check if onboarding is completed
     bool hasCompletedOnboarding = await SecurePrefs.getBool(
       SecureStorageKeys.PERMISSION,
     );
-    String token = authToken;
-    bool hasAnyUserData =
-        userName.isNotEmpty || userID.isNotEmpty || token.isNotEmpty;
 
     if (!mounted) return;
 
-    if (!hasCompletedOnboarding || !hasAnyUserData) {
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        AppRoutes.onboarding,
-        (route) => false,
-      );
-    } else if (token.isEmpty) {
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        AppRoutes.login,
-        (route) => false,
-      );
+    // SCENARIO #3: Active subscription exists -> skip Paywall
+    if (isSubscribed) {
+      if (!hasCompletedOnboarding) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.onboarding,
+          (route) => false,
+        );
+      } else if (!isLoggedIn) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.login,
+          (route) => false,
+        );
+      } else {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.tabbar,
+          (route) => false,
+        );
+      }
+      return;
+    }
+
+    // User is NOT subscribed (could be on active trial, expired trial, or first installation flow)
+    if (!isLoggedIn) {
+      // First installation flow: PIN -> Paywall (Start Free Trial) -> Onboarding -> Login -> Tabbar
+      if (!hasCompletedOnboarding) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.paywall,
+          (route) => false,
+        );
+      } else {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.login,
+          (route) => false,
+        );
+      }
     } else {
+      // Logged in user with active trial (Scenario #1) or expired trial (Scenario #2)
+      // Both route to Paywall (Paywall screen dynamically renders a "Continue" button or locks screen)
       Navigator.pushNamedAndRemoveUntil(
         context,
-        AppRoutes.tabbar,
+        AppRoutes.paywall,
         (route) => false,
       );
     }

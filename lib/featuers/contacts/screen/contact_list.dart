@@ -1553,7 +1553,7 @@ class _ContactListScreenV2State extends State<ContactListScreen>
     // 3. Using environment variables
 
     // For now, return the static app name
-    return 'WhoxaChat';
+    return 'CheetaNewsChat';
   }
 
   void _copyInviteLink() {

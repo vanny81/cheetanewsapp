@@ -12,7 +12,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Whoxa</string>
+	<string>CheetaNews</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -32,21 +32,21 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Whoxa Chat uses your camera to capture profile photos, take pictures to share in conversations, and record videos for video messages.</string>
+	<string>CheetaNews Chat uses your camera to capture profile photos, take pictures to share in conversations, and record videos for video messages.</string>
 	<key>NSContactsUsageDescription</key>
-	<string>Whoxa Chat app needs access to your contacts to connect with your friends.</string>
+	<string>CheetaNews Chat app needs access to your contacts to connect with your friends.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Whoxa Chat uses your location when you choose to share your current position with friends in a conversation, allowing them to see where you are on a map.</string>
+	<string>CheetaNews Chat uses your location when you choose to share your current position with friends in a conversation, allowing them to see where you are on a map.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Whoxa user need this capability for share location in chat.</string>
+	<string>CheetaNews user need this capability for share location in chat.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Whoxa Chat need microphone access for voice messages and audio calls</string>
+	<string>CheetaNews Chat need microphone access for voice messages and audio calls</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Whoxa Chat app needs access to your photo library to upload photos and videos.</string>
+	<string>CheetaNews Chat app needs access to your photo library to upload photos and videos.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Whoxa Chat app needs access to save photos and videos to your photo library.</string>
+	<string>CheetaNews Chat app needs access to save photos and videos to your photo library.</string>
 	<key>NSUserNotificationsUsageDescription</key>
-	<string>Whoxa Chat app needs to send you notifications for messages, calls, and important updates.</string>
+	<string>CheetaNews Chat app needs to send you notifications for messages, calls, and important updates.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

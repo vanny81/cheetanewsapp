@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
+import 'package:whoxa/featuers/auth/provider/stealth_provider.dart';
 import 'package:whoxa/featuers/auth/services/onesignal_service.dart';
 import 'package:whoxa/utils/preference_key/constant/app_routes.dart';
 import 'package:whoxa/utils/preference_key/preference_key.dart';
@@ -87,13 +89,8 @@ class OnboardingProvider extends ChangeNotifier {
       permission = true;
 
       debugPrint("🎯 ONBOARDING COMPLETED (user skipped permissions)");
-
       if (!context.mounted) return;
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        AppRoutes.login,
-        (route) => false,
-      );
+      await _navigateToNext(context);
     }
   }
 
@@ -645,11 +642,7 @@ class OnboardingProvider extends ChangeNotifier {
         debugPrint("  Platform: iOS - onboarding flow completed");
 
         if (!context.mounted) return;
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.login,
-          (route) => false,
-        );
+        await _navigateToNext(context);
       }
       return;
     }
@@ -730,15 +723,42 @@ class OnboardingProvider extends ChangeNotifier {
         debugPrint("  User proceeded without granting all permissions");
 
         if (!context.mounted) return;
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.login,
-          (route) => false,
-        );
+        await _navigateToNext(context);
       }
     }
 
     // Log permission statuses after the request
     await logAllPermissionStatuses();
+  }
+
+  Future<void> _navigateToNext(BuildContext context) async {
+    if (authToken.isEmpty) {
+      // First install/not logged in: onboarding goes straight to Login
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.login,
+        (route) => false,
+      );
+      return;
+    }
+
+    final stealthProvider = Provider.of<StealthProvider>(context, listen: false);
+    final hasSubscription = await stealthProvider.checkSubscriptionStatus();
+    
+    if (!context.mounted) return;
+    
+    if (!hasSubscription) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.paywall,
+        (route) => false,
+      );
+    } else {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.tabbar,
+        (route) => false,
+      );
+    }
   }
 }

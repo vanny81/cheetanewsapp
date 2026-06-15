@@ -5348,7 +5348,7 @@ class _UniversalChatScreenState extends State<UniversalChatScreen>
         MessageType.Image,
       );
 
-      FilePickerResult? pickedFile = await FilePicker.platform.pickFiles(
+      FilePickerResult? pickedFile = await FilePicker.pickFiles(
         type: FileType.custom,
         allowMultiple: false,
         allowedExtensions: allowedExtensions,
@@ -5506,7 +5506,7 @@ class _UniversalChatScreenState extends State<UniversalChatScreen>
       MessageType.Video,
     );
 
-    FilePickerResult? pickedFile = await FilePicker.platform.pickFiles(
+    FilePickerResult? pickedFile = await FilePicker.pickFiles(
       type: FileType.custom,
       allowMultiple: false,
       allowedExtensions: allowedExtensions,
@@ -5529,7 +5529,7 @@ class _UniversalChatScreenState extends State<UniversalChatScreen>
       MessageType.File,
     );
 
-    FilePickerResult? pickedFile = await FilePicker.platform.pickFiles(
+    FilePickerResult? pickedFile = await FilePicker.pickFiles(
       type: FileType.custom,
       allowMultiple: false,
       allowedExtensions: allowedExtensions,

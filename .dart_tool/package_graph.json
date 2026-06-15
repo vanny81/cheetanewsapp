@@ -5,7 +5,7 @@
   "packages": [
     {
       "name": "whoxa",
-      "version": "1.0.2+15",
+      "version": "1.5.1+16",
       "dependencies": [
         "audioplayers",
         "cached_network_image",
@@ -175,7 +175,7 @@
     },
     {
       "name": "share_plus",
-      "version": "11.1.0",
+      "version": "12.0.2",
       "dependencies": [
         "cross_file",
         "ffi",
@@ -221,7 +221,7 @@
     },
     {
       "name": "flutter_local_notifications",
-      "version": "19.5.0",
+      "version": "20.1.0",
       "dependencies": [
         "clock",
         "flutter",
@@ -248,7 +248,7 @@
     },
     {
       "name": "firebase_analytics",
-      "version": "10.10.7",
+      "version": "12.4.2",
       "dependencies": [
         "firebase_analytics_platform_interface",
         "firebase_analytics_web",
@@ -259,7 +259,7 @@
     },
     {
       "name": "firebase_core",
-      "version": "2.32.0",
+      "version": "4.10.0",
       "dependencies": [
         "firebase_core_platform_interface",
         "firebase_core_web",
@@ -289,11 +289,11 @@
     },
     {
       "name": "flutter_secure_storage",
-      "version": "9.2.4",
+      "version": "10.3.1",
       "dependencies": [
         "flutter",
+        "flutter_secure_storage_darwin",
         "flutter_secure_storage_linux",
-        "flutter_secure_storage_macos",
         "flutter_secure_storage_platform_interface",
         "flutter_secure_storage_web",
         "flutter_secure_storage_windows",
@@ -342,7 +342,7 @@
     },
     {
       "name": "syncfusion_flutter_pdfviewer",
-      "version": "30.2.7",
+      "version": "31.1.19",
       "dependencies": [
         "async",
         "device_info_plus",
@@ -365,7 +365,7 @@
     },
     {
       "name": "syncfusion_flutter_pdf",
-      "version": "30.2.7",
+      "version": "31.1.19",
       "dependencies": [
         "convert",
         "crypto",
@@ -436,7 +436,7 @@
     },
     {
       "name": "package_info_plus",
-      "version": "8.3.1",
+      "version": "9.0.1",
       "dependencies": [
         "clock",
         "ffi",
@@ -452,7 +452,7 @@
     },
     {
       "name": "connectivity_plus",
-      "version": "6.1.5",
+      "version": "7.1.1",
       "dependencies": [
         "collection",
         "connectivity_plus_platform_interface",
@@ -475,7 +475,7 @@
     },
     {
       "name": "flutter_contacts",
-      "version": "1.1.9+2",
+      "version": "2.1.0",
       "dependencies": [
         "flutter"
       ]
@@ -513,7 +513,7 @@
     },
     {
       "name": "get_it",
-      "version": "8.3.0",
+      "version": "9.2.1",
       "dependencies": [
         "async",
         "collection",
@@ -560,7 +560,7 @@
     },
     {
       "name": "file_picker",
-      "version": "10.3.10",
+      "version": "11.0.2",
       "dependencies": [
         "cross_file",
         "dbus",
@@ -1090,14 +1090,14 @@
     },
     {
       "name": "flutter_local_notifications_platform_interface",
-      "version": "9.1.0",
+      "version": "10.0.0",
       "dependencies": [
         "plugin_platform_interface"
       ]
     },
     {
       "name": "flutter_local_notifications_windows",
-      "version": "1.0.3",
+      "version": "2.0.1",
       "dependencies": [
         "ffi",
         "flutter",
@@ -1109,7 +1109,7 @@
     },
     {
       "name": "flutter_local_notifications_linux",
-      "version": "6.0.0",
+      "version": "7.0.0",
       "dependencies": [
         "dbus",
         "ffi",
@@ -1133,7 +1133,7 @@
     },
     {
       "name": "firebase_core_platform_interface",
-      "version": "5.4.2",
+      "version": "7.0.1",
       "dependencies": [
         "collection",
         "flutter",
@@ -1144,7 +1144,7 @@
     },
     {
       "name": "firebase_analytics_web",
-      "version": "0.5.7+7",
+      "version": "0.6.1+8",
       "dependencies": [
         "_flutterfire_internals",
         "firebase_analytics_platform_interface",
@@ -1156,7 +1156,7 @@
     },
     {
       "name": "firebase_analytics_platform_interface",
-      "version": "3.10.8",
+      "version": "6.0.2",
       "dependencies": [
         "_flutterfire_internals",
         "firebase_core",
@@ -1167,7 +1167,7 @@
     },
     {
       "name": "firebase_core_web",
-      "version": "2.24.0",
+      "version": "3.8.0",
       "dependencies": [
         "firebase_core_platform_interface",
         "flutter",
@@ -1229,7 +1229,7 @@
     },
     {
       "name": "flutter_secure_storage_windows",
-      "version": "3.1.2",
+      "version": "4.1.0",
       "dependencies": [
         "ffi",
         "flutter",
@@ -1241,36 +1241,36 @@
     },
     {
       "name": "flutter_secure_storage_web",
-      "version": "1.2.1",
+      "version": "2.1.1",
       "dependencies": [
         "flutter",
         "flutter_secure_storage_platform_interface",
         "flutter_web_plugins",
-        "js"
+        "web"
       ]
     },
     {
       "name": "flutter_secure_storage_platform_interface",
-      "version": "1.1.2",
+      "version": "2.0.1",
       "dependencies": [
         "flutter",
         "plugin_platform_interface"
       ]
     },
     {
-      "name": "flutter_secure_storage_macos",
-      "version": "3.1.3",
+      "name": "flutter_secure_storage_linux",
+      "version": "3.0.1",
       "dependencies": [
         "flutter",
         "flutter_secure_storage_platform_interface"
       ]
     },
     {
-      "name": "flutter_secure_storage_linux",
-      "version": "1.2.3",
+      "name": "flutter_secure_storage_darwin",
+      "version": "0.3.2",
       "dependencies": [
         "flutter",
-        "flutter_secure_storage_platform_interface"
+        "plugin_platform_interface"
       ]
     },
     {
@@ -1358,7 +1358,7 @@
     },
     {
       "name": "syncfusion_flutter_signaturepad",
-      "version": "30.2.7",
+      "version": "31.1.19",
       "dependencies": [
         "flutter",
         "syncfusion_flutter_core"
@@ -1366,7 +1366,7 @@
     },
     {
       "name": "syncfusion_flutter_core",
-      "version": "30.2.7",
+      "version": "31.1.19",
       "dependencies": [
         "flutter",
         "vector_math"
@@ -1374,7 +1374,7 @@
     },
     {
       "name": "syncfusion_pdfviewer_linux",
-      "version": "30.2.7",
+      "version": "31.1.19",
       "dependencies": [
         "flutter",
         "plugin_platform_interface"
@@ -1382,14 +1382,14 @@
     },
     {
       "name": "syncfusion_pdfviewer_windows",
-      "version": "30.2.7",
+      "version": "31.1.19",
       "dependencies": [
         "flutter"
       ]
     },
     {
       "name": "syncfusion_pdfviewer_macos",
-      "version": "30.2.7",
+      "version": "31.1.19",
       "dependencies": [
         "flutter",
         "syncfusion_pdfviewer_platform_interface"
@@ -1397,7 +1397,7 @@
     },
     {
       "name": "syncfusion_pdfviewer_web",
-      "version": "30.2.7",
+      "version": "31.1.19",
       "dependencies": [
         "flutter",
         "flutter_web_plugins",
@@ -1407,7 +1407,7 @@
     },
     {
       "name": "syncfusion_pdfviewer_platform_interface",
-      "version": "30.2.7",
+      "version": "31.1.19",
       "dependencies": [
         "flutter",
         "plugin_platform_interface"
@@ -1757,7 +1757,7 @@
     },
     {
       "name": "geolocator_linux",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": [
         "dbus",
         "flutter",
@@ -1966,7 +1966,7 @@
     },
     {
       "name": "_flutterfire_internals",
-      "version": "1.3.35",
+      "version": "1.3.72",
       "dependencies": [
         "collection",
         "firebase_core",

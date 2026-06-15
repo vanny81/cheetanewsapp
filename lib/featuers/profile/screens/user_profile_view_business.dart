@@ -853,7 +853,7 @@ class _UserProfileViewBusinessState extends State<UserProfileViewBusiness> {
                       ),
                       SizedBox(height: 2),
                       Text(
-                        "This account uses Whoxa Business - ${_formatJoinDate(userRecord.createdAt)}",
+                        "This account uses CheetaNews Business - ${_formatJoinDate(userRecord.createdAt)}",
                         style: AppTypography.innerText12Ragu(
                           context,
                         ).copyWith(color: AppColors.textColor.textDarkGray),

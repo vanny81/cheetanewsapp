@@ -54,8 +54,9 @@ Future<void> main() async {
     await SecureStorageKeys().loadUserFromPrefs();
     // ✅ CRITICAL FIX: Load boolean values including isDemo, isPhoneAuthEnabled, isEmailAuthEnabled
     await SecureStorageKeys().loadeBoolValuePrefes();
-    isLightModeGlobal =
-        await SecurePrefs.getBoolLighDark(SecureStorageKeys.isLightMode);
+    isLightModeGlobal = await SecurePrefs.getBoolLighDark(
+      SecureStorageKeys.isLightMode,
+    );
     debugPrint("isLightModeGlobal:$isLightModeGlobal");
     debugPrint("isDemo loaded on app start:$isDemo");
 
@@ -204,7 +205,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             NavigationHelper.navigatorKey, // ✅ Critical for navigation
         debugShowCheckedModeBanner: false,
 
-        title: 'Whoxa',
+        title: 'CheetaNews',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: AppColors.white),
           useMaterial3: true,

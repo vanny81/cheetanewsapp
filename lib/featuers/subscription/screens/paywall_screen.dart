@@ -5,6 +5,9 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:whoxa/featuers/auth/provider/stealth_provider.dart';
 import 'package:whoxa/utils/preference_key/constant/app_routes.dart';
 import 'package:whoxa/utils/preference_key/constant/app_colors.dart';
+import 'package:whoxa/utils/preference_key/preference_key.dart';
+import 'package:whoxa/utils/preference_key/sharedpref_key.dart';
+import 'package:whoxa/widgets/global.dart';
 
 class PaywallScreen extends StatefulWidget {
   const PaywallScreen({super.key});
@@ -52,11 +55,32 @@ class _PaywallScreenState extends State<PaywallScreen> {
       ),
     );
 
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      AppRoutes.tabbar,
-      (route) => false,
+    // Check if onboarding is completed
+    bool hasCompletedOnboarding = await SecurePrefs.getBool(
+      SecureStorageKeys.PERMISSION,
     );
+
+    if (!mounted) return;
+
+    if (!hasCompletedOnboarding) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.onboarding,
+        (route) => false,
+      );
+    } else if (authToken.isEmpty) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.login,
+        (route) => false,
+      );
+    } else {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.tabbar,
+        (route) => false,
+      );
+    }
   }
 
   // Real PayStack Checkout WebView Loader
@@ -130,6 +154,39 @@ class _PaywallScreenState extends State<PaywallScreen> {
         );
       },
     );
+  }
+
+  void _handleContinue() async {
+    final isLoggedIn = authToken.isNotEmpty;
+    
+    if (!isLoggedIn) {
+      // First installation flow -> Go to Onboarding
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.onboarding,
+        (route) => false,
+      );
+    } else {
+      // Logged in user with active trial -> Go to Tabbar (or check Onboarding just in case)
+      bool hasCompletedOnboarding = await SecurePrefs.getBool(
+        SecureStorageKeys.PERMISSION,
+      );
+      if (!mounted) return;
+      
+      if (!hasCompletedOnboarding) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.onboarding,
+          (route) => false,
+        );
+      } else {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.tabbar,
+          (route) => false,
+        );
+      }
+    }
   }
 
   void _handleRealSubscribe() {
@@ -244,13 +301,35 @@ class _PaywallScreenState extends State<PaywallScreen> {
               const SizedBox(height: 8),
               
               // Subtitle
-              const Text(
-                "Trial Period Expired (3-Day Limit)",
-                style: TextStyle(
-                  color: Colors.redAccent,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
+              Consumer<StealthProvider>(
+                builder: (context, stealthProvider, child) {
+                  String statusText = "";
+                  Color statusColor = Colors.white;
+                  
+                  if (authToken.isEmpty) {
+                    statusText = "Confirming 3-Day Free Trial";
+                    statusColor = Colors.cyanAccent;
+                  } else if (stealthProvider.isSubscribed) {
+                    statusText = "Subscription Status: Active Subscriber";
+                    statusColor = Colors.greenAccent;
+                  } else if (stealthProvider.isTrialActive) {
+                    final days = stealthProvider.trialDaysRemaining;
+                    statusText = "Subscription Status: Trial Active ($days Days Remaining)";
+                    statusColor = Colors.amberAccent;
+                  } else {
+                    statusText = "Subscription Status: Trial Expired (3-Day Limit)";
+                    statusColor = Colors.redAccent;
+                  }
+                  
+                  return Text(
+                    statusText,
+                    style: TextStyle(
+                      color: statusColor,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 32),
 
@@ -275,8 +354,51 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
               const SizedBox(height: 36),
 
-              // Subscription package selector (vibrant visual cards)
-              Column(
+              Consumer<StealthProvider>(
+                builder: (context, stealthProvider, child) {
+                  final isLoggedIn = authToken.isNotEmpty;
+                  final showContinue = !isLoggedIn || stealthProvider.isTrialActive;
+                  
+                  if (!showContinue) return const SizedBox.shrink();
+                  
+                  String btnText = isLoggedIn ? "Continue" : "Start 3-Day Free Trial";
+                  
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xffFCC604),
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 2,
+                        ),
+                        onPressed: _handleContinue,
+                        child: Text(
+                          btnText,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              Opacity(
+                opacity: authToken.isNotEmpty ? 1.0 : 0.5,
+                child: AbsorbPointer(
+                  absorbing: authToken.isEmpty,
+                  child: Column(
+                    children: [
+                      // Subscription package selector (vibrant visual cards)
+                      Column(
                 children: List.generate(_packages.length, (index) {
                   final package = _packages[index];
                   final isSelected = _selectedPackageIndex == index;
@@ -474,8 +596,12 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   ],
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
 
-              const SizedBox(height: 24),
+      const SizedBox(height: 24),
               // Bypass / Simulate link
               TextButton(
                 onPressed: () {

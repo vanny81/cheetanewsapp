@@ -113,7 +113,7 @@ class StoryProvider extends ChangeNotifier {
   File? video;
   String? filePath;
   Future<void> getImageFromGallery1(BuildContext context) async {
-    FilePickerResult? pickedFile = await FilePicker.platform.pickFiles(
+    FilePickerResult? pickedFile = await FilePicker.pickFiles(
       type: FileType.custom,
       allowMultiple: false,
       allowedExtensions: [

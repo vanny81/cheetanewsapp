@@ -177,6 +177,16 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xffFCC604),
+        foregroundColor: Colors.black,
+        elevation: 6,
+        tooltip: "Subscription Status",
+        child: const Icon(Icons.workspace_premium, size: 28),
+        onPressed: () {
+          Navigator.pushNamed(context, AppRoutes.paywall);
+        },
+      ),
     );
   }
 

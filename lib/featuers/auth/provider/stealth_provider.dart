@@ -2,6 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:get_it/get_it.dart';
+import 'package:whoxa/core/api/api_client.dart';
+import 'package:whoxa/utils/preference_key/preference_key.dart';
 import 'package:whoxa/utils/preference_key/sharedpref_key.dart';
 import 'package:whoxa/utils/logger.dart';
 
@@ -17,12 +20,18 @@ class StealthProvider with ChangeNotifier {
   bool _isLoadingNews = false;
   List<dynamic> _newsArticles = [];
   String? _newsError;
+  bool _isSubscribed = false;
+  bool _isTrialActive = false;
+  int _trialDaysRemaining = 0;
 
   bool get isUnlocked => _isUnlocked;
   bool get hasPinSet => _hasPinSet;
   bool get isLoadingNews => _isLoadingNews;
   List<dynamic> get newsArticles => _newsArticles;
   String? get newsError => _newsError;
+  bool get isSubscribed => _isSubscribed;
+  bool get isTrialActive => _isTrialActive;
+  int get trialDaysRemaining => _trialDaysRemaining;
 
   StealthProvider() {
     _init();
@@ -33,6 +42,7 @@ class StealthProvider with ChangeNotifier {
       final pin = await SecurePrefs.getString(_stealthPinKey);
       _hasPinSet = pin != null && pin.isNotEmpty;
       _logger.i("Stealth Layer initialized: hasPinSet = $_hasPinSet");
+      await checkSubscriptionStatus();
     } catch (e) {
       _logger.e("Error loading Stealth PIN code", e);
     }
@@ -90,11 +100,18 @@ class StealthProvider with ChangeNotifier {
 
   // Check subscription / 3-day trial
   Future<bool> checkSubscriptionStatus() async {
+    // Asynchronously trigger sync with backend in background
+    unawaited(syncSubscriptionWithBackend());
+
     try {
       // Check if subscribed
-      final isSubscribed = await SecurePrefs.getBool(_isSubscribedKey);
-      if (isSubscribed) {
+      final isSubscribedVal = await SecurePrefs.getBool(_isSubscribedKey);
+      if (isSubscribedVal) {
+        _isSubscribed = true;
+        _isTrialActive = false;
+        _trialDaysRemaining = 0;
         _logger.i("Stealth Layer: Active subscription found");
+        notifyListeners();
         return true;
       }
 
@@ -105,26 +122,89 @@ class StealthProvider with ChangeNotifier {
         final nowStr = DateTime.now().toIso8601String();
         await SecurePrefs.setString(_trialStartDateKey, nowStr);
         _logger.i("Stealth Layer: Initialized 3-day trial starting at $nowStr");
+        _isSubscribed = false;
+        _isTrialActive = true;
+        _trialDaysRemaining = 3;
+        notifyListeners();
         return true; // Trial is active since we just started it
       }
 
       final trialStart = DateTime.parse(trialStartStr);
       final daysElapsed = DateTime.now().difference(trialStart).inDays;
       if (daysElapsed < 3) {
+        _isSubscribed = false;
+        _isTrialActive = true;
+        _trialDaysRemaining = 3 - daysElapsed;
         _logger.i("Stealth Layer: Trial is active (Day ${daysElapsed + 1}/3)");
+        notifyListeners();
         return true;
       }
 
+      _isSubscribed = false;
+      _isTrialActive = false;
+      _trialDaysRemaining = 0;
       _logger.w("Stealth Layer: Trial expired");
     } catch (e) {
       _logger.e("Error checking subscription status", e);
     }
+    notifyListeners();
     return false;
+  }
+
+  Future<void> syncSubscriptionWithBackend() async {
+    try {
+      final token = await SecurePrefs.getString(SecureStorageKeys.TOKEN) ?? '';
+      if (token.isEmpty) {
+        _logger.d("User not logged in, skipping backend subscription sync");
+        return;
+      }
+
+      final apiClient = GetIt.instance<ApiClient>();
+      final response = await apiClient.request("/payment/status");
+
+      if (response != null && response['success'] == true) {
+        final data = response['data'];
+        final isSubscribedVal = data['is_subscribed'] == true;
+        final isTrialActiveVal = data['is_trial_active'] == true;
+        final trialStart = data['trial_start_date']?.toString();
+
+        await SecurePrefs.setBool(_isSubscribedKey, isSubscribedVal);
+        if (trialStart != null) {
+          await SecurePrefs.setString(_trialStartDateKey, trialStart);
+        }
+        
+        _isSubscribed = isSubscribedVal;
+        _isTrialActive = isTrialActiveVal;
+        
+        if (isTrialActiveVal && trialStart != null) {
+          try {
+            final trialStartDate = DateTime.parse(trialStart);
+            final daysElapsed = DateTime.now().difference(trialStartDate).inDays;
+            final remaining = 3 - daysElapsed;
+            _trialDaysRemaining = remaining < 0 ? 0 : remaining;
+          } catch (_) {
+            _trialDaysRemaining = 0;
+          }
+        } else {
+          _trialDaysRemaining = 0;
+        }
+        
+        _logger.i("Stealth Layer: Subscription synced from backend: isSubscribed=$_isSubscribed, isTrialActive=$_isTrialActive");
+        notifyListeners();
+      }
+    } catch (e) {
+      _logger.e("Error syncing subscription status with backend", e);
+    }
   }
 
   Future<void> setSubscriptionActive(bool active) async {
     try {
       await SecurePrefs.setBool(_isSubscribedKey, active);
+      _isSubscribed = active;
+      if (active) {
+        _isTrialActive = false;
+        _trialDaysRemaining = 0;
+      }
       _logger.i("Stealth Layer: Subscription status updated to $active");
     } catch (e) {
       _logger.e("Error updating subscription status", e);

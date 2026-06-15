@@ -238,7 +238,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler/permission_handler.dart' hide PermissionStatus;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:whoxa/core/error/app_error.dart';
 import 'package:whoxa/featuers/chat/services/contact_name_service.dart';
@@ -401,9 +401,8 @@ class ContactListProvider with ChangeNotifier {
           '🔐 Contact permission not granted, requesting permission...',
         );
         // Only request permission if we don't already have it
-        permissionGranted = await FlutterContacts.requestPermission(
-          readonly: false,
-        );
+        final status = await FlutterContacts.permissions.request(PermissionType.readWrite);
+        permissionGranted = status == PermissionStatus.granted || status == PermissionStatus.limited;
 
         if (!permissionGranted) {
           debugPrint('❌ Contact permission request denied');
@@ -417,9 +416,8 @@ class ContactListProvider with ChangeNotifier {
       debugPrint('✅ Contact permission confirmed: $permissionGranted');
 
       // 2. Fetch contacts from device
-      final deviceContacts = await FlutterContacts.getContacts(
-        withProperties: true,
-        withPhoto: true,
+      final deviceContacts = await FlutterContacts.getAll(
+        properties: ContactProperties.all,
       );
 
       // 3. Prepare contact details for API
@@ -430,7 +428,7 @@ class ContactListProvider with ChangeNotifier {
             final phoneData = _parsePhoneNumber(phone.number);
             if (phoneData['number']!.isNotEmpty) {
               contactsForApi.add({
-                'name': contact.displayName,
+                'name': contact.displayName ?? '',
                 'number': phoneData['number'], // Number without country code
                 'country_code':
                     phoneData['country_code'], // Country code separate
@@ -779,7 +777,7 @@ class ContactListProvider with ChangeNotifier {
 
         // Create model
         final contactModel = ContactModel(
-          name: contact.displayName,
+          name: contact.displayName ?? '',
           phoneNumber: cleanNumber,
           userId: apiContact?.userId?.toString(),
           photo: null, // Don't use device photo anymore

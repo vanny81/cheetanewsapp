@@ -3,7 +3,7 @@ description: "A new Flutter project."
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.2+15
+version: 1.5.1+16
 
 environment:
   sdk: ^3.7.0
@@ -19,42 +19,42 @@ dependencies:
   google_maps_flutter: ^2.12.1
   geolocator: ^14.0.0
   intl: ^0.20.2
-  file_picker: ^10.0.0
+  file_picker: ^11.0.2
   permission_handler: ^12.0.0+1
   path: ^1.9.1
   flutter_svg: ^2.0.17
   provider: ^6.1.4
-  get_it: ^8.0.3
+  get_it: ^9.2.1
   dio: ^5.8.0+1
   just_audio: ^0.10.4
-  flutter_contacts: ^1.1.9+2
+  flutter_contacts: ^2.1.0
   socket_io_client: ^3.1.2
-  connectivity_plus: ^6.1.4
-  package_info_plus: ^8.3.0
+  connectivity_plus: ^7.1.1
+  package_info_plus: ^9.0.1
   status_view: ^0.0.2
   flutter_image_compress: ^2.4.0
   path_provider: ^2.1.5
   video_player: ^2.9.5
   video_trimmer: ^5.0.0
-  syncfusion_flutter_pdf: ^30.1.37
-  syncfusion_flutter_pdfviewer: ^30.1.37
+  syncfusion_flutter_pdf: ^31.1.19
+  syncfusion_flutter_pdfviewer: ^31.1.19
   device_info_plus: ^11.1.0
   url_launcher: ^6.3.1
   cached_network_image: ^3.4.1
-  flutter_secure_storage: ^9.2.4
+  flutter_secure_storage: ^10.3.1
   flutter_hooks: ^0.21.2
   flutter_inappwebview: ^6.0.0
   # Firebase
-  firebase_core: ^2.32.0
-  firebase_analytics: ^10.10.7
+  firebase_core: ^4.10.0
+  firebase_analytics: ^12.4.2
   # OneSignal
   onesignal_flutter: ^5.3.3
   uuid: ^4.5.1
-  flutter_local_notifications: ^19.3.0
+  flutter_local_notifications: ^20.1.0
   flutter_webrtc: ^1.0.0
   peerdart: ^0.5.6
   giphy_get: ^3.5.6
-  share_plus: ^11.0.0
+  share_plus: ^12.0.2
   # Device sound profile and vibration
   audioplayers: ^6.1.0
   flutter_html: ^3.0.0-beta.2
