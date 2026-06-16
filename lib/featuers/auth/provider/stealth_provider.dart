@@ -14,6 +14,8 @@ class StealthProvider with ChangeNotifier {
   static const String _stealthPinKey = "STEALTH_PIN_CODE";
   static const String _trialStartDateKey = "STEALTH_TRIAL_START_DATE";
   static const String _isSubscribedKey = "STEALTH_IS_SUBSCRIBED";
+  static const String _newsCacheKey = "STEALTH_NEWS_CACHE";
+  static const String _newsCacheTimeKey = "STEALTH_NEWS_CACHE_TIME";
 
   bool _isUnlocked = false;
   bool _hasPinSet = false;
@@ -43,6 +45,7 @@ class StealthProvider with ChangeNotifier {
       _hasPinSet = pin != null && pin.isNotEmpty;
       _logger.i("Stealth Layer initialized: hasPinSet = $_hasPinSet");
       await checkSubscriptionStatus();
+      await _loadCachedNews();
     } catch (e) {
       _logger.e("Error loading Stealth PIN code", e);
     }
@@ -212,23 +215,71 @@ class StealthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Fetch CNN news articles from free clone API saurav.tech
-  Future<void> fetchNews() async {
+  Future<void> _loadCachedNews() async {
+    try {
+      final cacheJson = await SecurePrefs.getString(_newsCacheKey);
+      if (cacheJson != null && cacheJson.isNotEmpty) {
+        final List<dynamic> cached = jsonDecode(cacheJson);
+        _newsArticles = cached;
+        _logger.i("Loaded ${_newsArticles.length} news articles from cache");
+      }
+    } catch (e) {
+      _logger.e("Error loading cached news", e);
+    }
+  }
+
+  // Fetch South Africa news articles from CurrentsAPI with caching
+  Future<void> fetchNews({bool forceRefresh = false}) async {
     if (_isLoadingNews) return;
+
+    if (!forceRefresh && _newsArticles.isNotEmpty) {
+      final cacheTimeStr = await SecurePrefs.getString(_newsCacheTimeKey);
+      if (cacheTimeStr != null && cacheTimeStr.isNotEmpty) {
+        try {
+          final cacheTime = DateTime.parse(cacheTimeStr);
+          final difference = DateTime.now().difference(cacheTime);
+          if (difference.inMinutes < 15) {
+            _logger.i("Stealth Layer: Using fresh cached news (age: ${difference.inMinutes}m)");
+            return;
+          }
+        } catch (_) {}
+      }
+    }
+
     _isLoadingNews = true;
     _newsError = null;
     notifyListeners();
 
     try {
-      _logger.i("Stealth Layer: Fetching camouflage news feed");
+      _logger.i("Stealth Layer: Fetching camouflage news feed from CurrentsAPI");
       final response = await http.get(
-        Uri.parse("https://saurav.tech/NewsAPI/everything/cnn.json"),
+        Uri.parse("https://api.currentsapi.services/v1/search?keywords=South%20Africa&language=en"),
+        headers: {
+          'Authorization': '4e-fBdUmxbTmrezyenOnVA2w-D9SmtJgspRYAgpK4xzgVBRO',
+        },
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        if (data != null && data['articles'] != null) {
-          _newsArticles = data['articles'];
+        if (data != null && data['news'] != null) {
+          final List<dynamic> rawArticles = data['news'];
+          _newsArticles = rawArticles.map((item) {
+            return {
+              'title': item['title'],
+              'description': item['description'],
+              'urlToImage': item['image'],
+              'source': {
+                'name': (item['author'] != null && item['author'].toString().trim().isNotEmpty)
+                    ? item['author']
+                    : 'Currents'
+              },
+              'publishedAt': item['published'],
+              'url': item['url'],
+            };
+          }).toList();
+
+          await SecurePrefs.setString(_newsCacheKey, jsonEncode(_newsArticles));
+          await SecurePrefs.setString(_newsCacheTimeKey, DateTime.now().toIso8601String());
           _logger.i("Stealth Layer: Fetched ${_newsArticles.length} news articles");
         } else {
           _newsError = "Invalid news data structure";

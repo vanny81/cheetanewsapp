@@ -113,7 +113,7 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
         color: AppColors.appPriSecColor.primaryColor,
         backgroundColor: const Color(0xff1e1e1e),
         onRefresh: () async {
-          await stealthProvider.fetchNews();
+          await stealthProvider.fetchNews(forceRefresh: true);
         },
         child: Column(
           children: [
@@ -402,7 +402,7 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Provider.of<StealthProvider>(context, listen: false).fetchNews();
+                Provider.of<StealthProvider>(context, listen: false).fetchNews(forceRefresh: true);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.appPriSecColor.primaryColor,
