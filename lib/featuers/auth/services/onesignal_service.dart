@@ -11,11 +11,11 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:whoxa/core/navigation_helper.dart';
 import 'package:whoxa/core/services/local_notification_service.dart';
-import 'package:whoxa/core/services/socket/socket_event_controller.dart';
 import 'package:whoxa/featuers/call/call_manager.dart';
 import 'package:whoxa/utils/logger.dart';
 import 'package:whoxa/core/services/cold_start_handler.dart';
-import 'package:whoxa/dependency_injection.dart';
+import 'package:whoxa/utils/preference_key/constant/app_routes.dart';
+import 'package:flutter/material.dart';
 
 class OneSignalService {
   static final OneSignalService _instance = OneSignalService._internal();
@@ -495,16 +495,8 @@ class OneSignalService {
           _handleIncomingCallBackground(event.notification);
         }
       } else {
-        // ✅ NEW: Check if notification is for the same chat user is currently viewing
-        if (_isAppInForeground &&
-            _isNotificationForCurrentChat(event.notification)) {
-          _logger.i('🚫 Hiding notification - user is already in this chat');
-          event.preventDefault(); // Hide the notification
-          return;
-        }
-
-        _logger.i('📨 Regular notification - showing normally');
-        event.notification.display();
+        _logger.i('🚫 Foreground regular notification detected - hiding it');
+        event.preventDefault(); // Prevent displaying the notification
       }
     } catch (e) {
       _logger.e('💥 Error handling foreground notification: $e');
@@ -610,77 +602,6 @@ class OneSignalService {
     }
   }
 
-  /// ✅ NEW: Check if notification is for the same chat user is currently viewing
-  bool _isNotificationForCurrentChat(OSNotification notification) {
-    try {
-      // Get the current chat ID from SocketEventController
-      final socketEventController = getIt<SocketEventController>();
-      final currentChatId = socketEventController.currentChatId;
-
-      if (currentChatId == null || currentChatId <= 0) {
-        _logger.d('No current chat active, allowing notification');
-        return false;
-      }
-
-      // Extract chat_id from notification data
-      final data = notification.additionalData;
-      if (data == null) {
-        _logger.d('No additional data in notification, allowing notification');
-        return false;
-      }
-
-      int? notificationChatId;
-
-      // Try to extract chat_id from different possible locations
-      if (data['chat_id'] != null) {
-        notificationChatId = int.tryParse(data['chat_id'].toString());
-      } else if (data['chatId'] != null) {
-        notificationChatId = int.tryParse(data['chatId'].toString());
-      } else {
-        // Try to parse from custom JSON string
-        final customString = data['custom'] as String?;
-        if (customString != null) {
-          final customData = _parseJsonString(customString);
-          if (customData != null && customData['a'] != null) {
-            final additionalData = customData['a'] as Map<String, dynamic>?;
-            if (additionalData != null) {
-              notificationChatId = int.tryParse(
-                additionalData['chat_id']?.toString() ?? '',
-              );
-            }
-          }
-        }
-      }
-
-      if (notificationChatId == null) {
-        _logger.d(
-          'Could not extract chat_id from notification, allowing notification',
-        );
-        return false;
-      }
-
-      final isSameChat = currentChatId == notificationChatId;
-      _logger.i(
-        'Chat comparison: current=$currentChatId, notification=$notificationChatId, same=$isSameChat',
-      );
-
-      return isSameChat;
-    } catch (e) {
-      _logger.e('Error checking if notification is for current chat: $e');
-      return false; // If error, allow notification to be safe
-    }
-  }
-
-  /// Helper method to parse JSON string safely
-  Map<String, dynamic>? _parseJsonString(String jsonString) {
-    try {
-      // Add JSON parsing logic if needed
-      // For now, return null as the custom data structure needs to be analyzed
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
 
   // / ✅ IMPROVED: Extract call data with better parsing for your exact format
   Map<String, dynamic>? _extractCallData(OSNotification notification) {
@@ -946,7 +867,18 @@ class OneSignalService {
     _logger.i(
       '📨 Handling regular notification: ${notification.notificationId}',
     );
-    // Implement your regular notification handling logic
+    
+    final context = NavigationHelper.context;
+    if (context != null) {
+      _logger.i('🧭 Redirecting clicked regular notification to News Feed screen...');
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.newsFeed,
+        (route) => false,
+      );
+    } else {
+      _logger.i('⏳ Navigation context is null (cold start). The app startup sequence will naturally open News Feed screen.');
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

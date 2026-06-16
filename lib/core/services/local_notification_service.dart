@@ -611,8 +611,29 @@ class CallNotificationService {
           ?.createNotificationChannel(callChannel);
 
       _logger.i('Call notification channel created successfully');
+
+      // ✅ CRITICAL: Create general notification channel for camouflaged news notifications
+      // This channel ID MUST match the ANDROID_CHANNEL_ID in the backend .env file ('Cheeta_channel')
+      // Without this channel, Android 8+ (API 26+) silently drops all non-call push notifications
+      const AndroidNotificationChannel generalChannel = AndroidNotificationChannel(
+        'Cheeta_channel', // Must match backend ANDROID_CHANNEL_ID
+        'News Alerts',
+        description: 'Breaking news alerts and updates',
+        importance: Importance.high,
+        enableVibration: true,
+        showBadge: true,
+        playSound: true,
+      );
+
+      await _localNotifications!
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.createNotificationChannel(generalChannel);
+
+      _logger.i('General (Cheeta_channel) notification channel created successfully');
     } catch (e) {
-      _logger.e('Error creating call notification channel', e);
+      _logger.e('Error creating notification channels', e);
     }
   }
 
