@@ -25,6 +25,13 @@ class _StealthPinScreenState extends State<StealthPinScreen>
   bool _isConfirming = false;
   String _firstEnteredPin = "";
 
+  // Navigation guard to prevent double-navigation and provider rebuild conflicts
+  bool _isNavigating = false;
+
+  // Cached provider reference — captured in didChangeDependencies so we never
+  // access BuildContext across async gaps (which triggers _dependents.isEmpty assertion).
+  StealthProvider? _stealthProvider;
+
   @override
   void initState() {
     super.initState();
@@ -36,27 +43,48 @@ class _StealthPinScreenState extends State<StealthPinScreen>
         .chain(CurveTween(curve: Curves.elasticIn))
         .animate(_shakeController)
       ..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
+        // FIX: Guard with mounted check — the status listener fires asynchronously.
+        // Without this, if navigation begins (dispose called) while the shake animation
+        // is mid-reverse, calling _shakeController.reverse() on a disposed controller
+        // triggers the '_dependents.isEmpty: is not true' framework assertion.
+        if (status == AnimationStatus.completed && mounted) {
           _shakeController.reverse();
         }
       });
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // FIX: Capture provider reference here (the safe lifecycle hook for InheritedWidget
+    // access) using listen: false. This prevents the widget from registering as a
+    // dependent, and ensures all async code can safely use _stealthProvider without
+    // touching BuildContext after an await gap.
+    _stealthProvider ??= Provider.of<StealthProvider>(context, listen: false);
+  }
+
+  @override
   void dispose() {
+    // FIX: Stop animation before disposing — prevents the status listener from firing
+    // on a disposed controller and triggering framework assertions.
+    _shakeController.stop();
     _shakeController.dispose();
     super.dispose();
   }
 
   void _triggerErrorShake() {
+    if (!mounted) return;
     HapticFeedback.heavyImpact();
     _shakeController.forward(from: 0.0);
+    // NOTE: _currentInput is cleared here; callers must NOT issue a second
+    // setState for related state resets — use _triggerErrorShakeWithReset() instead.
     setState(() {
       _currentInput.clear();
     });
   }
 
   void _handleKeyPress(String value) {
+    if (_isNavigating) return;
     if (_currentInput.length >= 4) return;
     HapticFeedback.lightImpact();
     setState(() {
@@ -69,6 +97,7 @@ class _StealthPinScreenState extends State<StealthPinScreen>
   }
 
   void _handleBackspace() {
+    if (_isNavigating) return;
     if (_currentInput.isEmpty) return;
     HapticFeedback.lightImpact();
     setState(() {
@@ -77,16 +106,22 @@ class _StealthPinScreenState extends State<StealthPinScreen>
   }
 
   Future<void> _processCompletedPin(String pin) async {
-    final stealthProvider = Provider.of<StealthProvider>(context, listen: false);
+    if (_isNavigating) return;
 
-    // Wait a brief millisecond to show the filled dot animation before transition
+    // FIX: Use cached provider reference — never call Provider.of(context) after
+    // an async gap. The BuildContext may be stale across awaits and accessing
+    // InheritedWidgets then can cause '_dependents.isEmpty' assertion errors.
+    final stealthProvider = _stealthProvider;
+    if (stealthProvider == null) return;
+
+    // Wait a brief moment to show the filled dot animation before transition
     await Future.delayed(const Duration(milliseconds: 150));
     if (!mounted) return;
 
     if (!stealthProvider.hasPinSet) {
-      // Setup Mode
+      // ── Setup Mode ────────────────────────────────────────────────────────
       if (!_isConfirming) {
-        // First entry completed
+        // First entry completed → move to confirm step
         setState(() {
           _firstEnteredPin = pin;
           _isConfirming = true;
@@ -95,12 +130,26 @@ class _StealthPinScreenState extends State<StealthPinScreen>
       } else {
         // Confirm entry completed
         if (_firstEnteredPin == pin) {
-          // Success! PIN codes match
+          // PINs match — set guard, stop any animation, then save & navigate
+          _isNavigating = true;
+          _shakeController.stop();
           await stealthProvider.setPin(pin);
+          if (!mounted) return;
           _navigateToNextScreen();
         } else {
-          // Mismatch
-          _triggerErrorShake();
+          // FIX: Mismatch — consolidate ALL state resets into a single setState
+          // call. Previously _triggerErrorShake() issued its own setState and then
+          // a second separate setState reset _isConfirming/_firstEnteredPin, causing
+          // two rapid rebuilds that could leave the dot-row in an inconsistent state
+          // and produce the 8-dot duplication glitch.
+          HapticFeedback.heavyImpact();
+          _shakeController.forward(from: 0.0);
+          setState(() {
+            _currentInput.clear();
+            _isConfirming = false;
+            _firstEnteredPin = "";
+          });
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("PINs do not match. Try again."),
@@ -108,18 +157,24 @@ class _StealthPinScreenState extends State<StealthPinScreen>
               duration: Duration(seconds: 2),
             ),
           );
-          setState(() {
-            _isConfirming = false;
-            _firstEnteredPin = "";
-          });
         }
       }
     } else {
-      // Unlock Mode
+      // ── Unlock Mode ───────────────────────────────────────────────────────
+      // Set guard before verifyPin which internally calls notifyListeners on success
+      _isNavigating = true;
       final success = await stealthProvider.verifyPin(pin);
+      if (!mounted) return;
       if (success) {
+        // FIX: Stop any ongoing shake animation before navigating away.
+        // If a previous wrong-PIN shake is still reversing when the correct PIN
+        // succeeds, the animation status listener can fire on a disposed controller
+        // during navigation teardown → '_dependents.isEmpty' red-screen assertion.
+        _shakeController.stop();
         _navigateToNextScreen();
       } else {
+        // Reset guard since we're staying on this screen
+        _isNavigating = false;
         _triggerErrorShake();
       }
     }
@@ -127,8 +182,11 @@ class _StealthPinScreenState extends State<StealthPinScreen>
 
   Future<void> _navigateToNextScreen() async {
     if (!mounted) return;
-    final stealthProvider = Provider.of<StealthProvider>(context, listen: false);
-    
+
+    // Use cached provider — avoids any BuildContext dependency after await
+    final stealthProvider = _stealthProvider;
+    if (stealthProvider == null) return;
+
     // Check current subscription/trial status
     await stealthProvider.checkSubscriptionStatus();
 
@@ -138,69 +196,51 @@ class _StealthPinScreenState extends State<StealthPinScreen>
     final isLoggedIn = authToken.isNotEmpty;
 
     // Check if onboarding is completed
-    bool hasCompletedOnboarding = await SecurePrefs.getBool(
+    final bool hasCompletedOnboarding = await SecurePrefs.getBool(
       SecureStorageKeys.PERMISSION,
     );
 
     if (!mounted) return;
 
-    // SCENARIO #3: Active subscription exists -> skip Paywall
+    // Determine target route
+    String targetRoute;
     if (isSubscribed) {
       if (!hasCompletedOnboarding) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.onboarding,
-          (route) => false,
-        );
+        targetRoute = AppRoutes.onboarding;
       } else if (!isLoggedIn) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.login,
-          (route) => false,
-        );
+        targetRoute = AppRoutes.login;
       } else {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.tabbar,
-          (route) => false,
-        );
+        targetRoute = AppRoutes.tabbar;
       }
-      return;
+    } else if (!isLoggedIn) {
+      targetRoute = !hasCompletedOnboarding ? AppRoutes.paywall : AppRoutes.login;
+    } else {
+      targetRoute = AppRoutes.paywall;
     }
 
-    // User is NOT subscribed (could be on active trial, expired trial, or first installation flow)
-    if (!isLoggedIn) {
-      // First installation flow: PIN -> Paywall (Start Free Trial) -> Onboarding -> Login -> Tabbar
-      if (!hasCompletedOnboarding) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.paywall,
-          (route) => false,
-        );
-      } else {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.login,
-          (route) => false,
-        );
-      }
-    } else {
-      // Logged in user with active trial (Scenario #1) or expired trial (Scenario #2)
-      // Both route to Paywall (Paywall screen dynamically renders a "Continue" button or locks screen)
+    // Execute navigation after the current frame to avoid framework assertion errors
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       Navigator.pushNamedAndRemoveUntil(
         context,
-        AppRoutes.paywall,
+        targetRoute,
         (route) => false,
       );
-    }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final stealthProvider = Provider.of<StealthProvider>(context);
+    // FIX: Use the cached provider reference instead of Provider.of(context, listen: false).
+    // Calling Provider.of inside build() — even with listen: false — can in some
+    // Provider/Flutter versions still associate the element, which combined with rapid
+    // animation-driven rebuilds produces the '_dependents.isEmpty' assertion.
+    // The fallback handles the edge case where didChangeDependencies hasn't fired yet.
+    final stealthProvider =
+        _stealthProvider ?? Provider.of<StealthProvider>(context, listen: false);
     final bool hasPinSet = stealthProvider.hasPinSet;
 
-    String instructionText = "";
+    String instructionText;
     if (!hasPinSet) {
       instructionText = _isConfirming ? "Confirm PIN code" : "Create secure PIN code";
     } else {
@@ -251,35 +291,40 @@ class _StealthPinScreenState extends State<StealthPinScreen>
             ),
             const SizedBox(height: 40),
 
-            // PIN Dots Indicator
+            // PIN Dots Indicator — dots are built inside the builder (not as child)
+            // so they always reflect the current _currentInput.length on every
+            // animation frame rebuild, preventing stale cached dot state.
             AnimatedBuilder(
               animation: _shakeAnimation,
-              builder: (context, child) {
-                return Padding(
-                  padding: EdgeInsets.only(left: _shakeAnimation.value, right: -_shakeAnimation.value),
-                  child: child,
+              builder: (context, _) {
+                return Transform.translate(
+                  offset: Offset(_shakeAnimation.value, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(4, (index) {
+                      final filled = index < _currentInput.length;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        margin: const EdgeInsets.symmetric(horizontal: 12),
+                        height: 16,
+                        width: 16,
+                        decoration: BoxDecoration(
+                          color: filled
+                              ? AppColors.appPriSecColor.primaryColor
+                              : Colors.white10,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: filled
+                                ? AppColors.appPriSecColor.primaryColor
+                                : Colors.white24,
+                            width: 1.5,
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
                 );
               },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(4, (index) {
-                  final filled = index < _currentInput.length;
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    margin: const EdgeInsets.symmetric(horizontal: 12),
-                    height: 16,
-                    width: 16,
-                    decoration: BoxDecoration(
-                      color: filled ? AppColors.appPriSecColor.primaryColor : Colors.white10,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: filled ? AppColors.appPriSecColor.primaryColor : Colors.white24,
-                        width: 1.5,
-                      ),
-                    ),
-                  );
-                }),
-              ),
             ),
 
             const Spacer(flex: 2),
@@ -307,7 +352,7 @@ class _StealthPinScreenState extends State<StealthPinScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Space placeholder or extra button
+                      // Space placeholder
                       const SizedBox(width: 64, height: 64),
                       _buildKeypadButton("0"),
                       _buildBackspaceButton(),

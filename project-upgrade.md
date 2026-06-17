@@ -48,20 +48,16 @@ graph TD
     }
     ```
 
-### B. Suggested Free News APIs
-We recommend using **standard RSS feeds** or a curated feed parser instead of rate-limited commercial REST APIs to guarantee uptime and zero cost:
-
-1. **RSS Feed Aggregator (Recommended)**: 
-   * **Source**: BBC News, Reuters, or CNN RSS feeds.
-   * **URL**: `http://feeds.bbci.co.uk/news/world/rss.xml`
-   * **Pros**: 100% free, no API keys, no rate limits, highly stable, and realistic news content.
-   * **Implementation**: Parse XML to JSON directly in Flutter using the `webfeed` package.
-2. **The Guardian API**:
-   * **URL**: `https://content.guardianapis.com/search`
-   * **Pros**: Free developer key, returns structured JSON, simple query parameters.
-3. **NewsAPI.org / GNews.io**:
-   * **Pros**: Comprehensive articles search.
-   * **Cons**: Free plans block production use (only allow localhost/development requests or have very low limits like 100 requests/day).
+### B. Suggested Free News APIs (Actual Implementation: CurrentsAPI)
+The news feed is implemented using **CurrentsAPI** with South Africa topic filtering and caching:
+* **Endpoint**: `https://api.currentsapi.services/v1/search`
+* **API Key**: `4e-fBdUmxbTmrezyenOnVA2w-D9SmtJgspRYAgpK4xzgVBRO`
+* **Filtering**: Filtered to South African content using query parameters `keywords=South Africa` and `language=en`.
+* **Caching Strategy**: Persistent secure storage caching via `SecurePrefs` with a 15-minute expiration time to minimize API usage.
+* **Fields Mapping**: The fetched API response is mapped to the legacy structure so the UI (`NewsFeedScreen`) requires zero visual changes:
+  * `image` -> `urlToImage`
+  * `published` -> `publishedAt`
+  * `author` -> `source: {name: ...}` (defaulting to `'Currents'`)
 
 ---
 
