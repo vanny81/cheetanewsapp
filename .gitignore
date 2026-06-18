@@ -1,3 +1,8 @@
 build
 android/.gradle
 .dart_tool
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Pods/
+ios/Podfile.lock
+ios/.symlinks/
