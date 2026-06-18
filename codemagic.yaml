@@ -1,4 +1,7 @@
-scripts:
-  - flutter pub get
-  - cd ios && pod install && cd ..
-  - flutter build ipa --release
+workflows:
+  ios-release:
+    name: iOS Release Build
+    scripts:
+      - flutter pub get
+      - cd ios && pod install && cd ..
+      - flutter build ipa --release
