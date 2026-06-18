@@ -5,5 +5,5 @@ workflows:
       - flutter clean
       - echo "Starting iOS Release Build" > build.txt
       - flutter pub get
-      - cd ios && pod install && cd ..
+      - cd ios && rm -rf Pods Podfile.lock .symlinks && pod install --repo-update && cd ..
       - flutter build ipa --release
