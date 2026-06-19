@@ -98,6 +98,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- OneSignal default notification icon -->
+        <meta-data android:name="com.onesignal.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_onesignal_default" />
     </application>
 
     <!-- Required to query activities that can process text, see:

@@ -508,7 +508,7 @@ class CallNotificationService {
 
       // Android initialization settings
       const AndroidInitializationSettings initializationSettingsAndroid =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
+          AndroidInitializationSettings('ic_stat_onesignal_default');
 
       // iOS initialization settings
       const DarwinInitializationSettings initializationSettingsIOS =
@@ -713,7 +713,7 @@ class CallNotificationService {
         //     callerAvatar != null
         //         ? NetworkBitmapAndroidIcon(callerAvatar)
         //         : const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-        largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+        largeIcon: const DrawableResourceAndroidBitmap('ic_onesignal_large_icon_default'),
         // Style as a big text notification
         styleInformation: BigTextStyleInformation(
           body,
@@ -802,6 +802,7 @@ class CallNotificationService {
         usesChronometer:
             callStatus == 'connected', // Show timer for connected calls
         chronometerCountDown: false,
+        largeIcon: const DrawableResourceAndroidBitmap('ic_onesignal_large_icon_default'),
         actions: <AndroidNotificationAction>[
           AndroidNotificationAction(
             'end_call',
@@ -1050,7 +1051,7 @@ class CallNotificationService {
         //     imageUrl != null
         //         ? NetworkBitmapAndroidIcon(imageUrl)
         //         : const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-        largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+        largeIcon: const DrawableResourceAndroidBitmap('ic_onesignal_large_icon_default'),
         styleInformation: BigTextStyleInformation(body),
         // imageUrl != null
         //     ? BigPictureStyleInformation(
