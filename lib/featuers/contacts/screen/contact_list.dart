@@ -25,6 +25,7 @@ import 'package:whoxa/utils/preference_key/constant/app_direction_manage.dart';
 import 'package:whoxa/utils/preference_key/constant/app_routes.dart';
 import 'package:whoxa/utils/preference_key/constant/app_text_style.dart';
 import 'package:whoxa/utils/preference_key/constant/app_theme_manage.dart';
+import 'package:whoxa/utils/preference_key/constant/app_constant.dart';
 import 'package:whoxa/utils/preference_key/constant/strings.dart';
 import 'package:whoxa/widgets/cusotm_blur_appbar.dart';
 import 'package:whoxa/widgets/global.dart';
@@ -1541,8 +1542,8 @@ class _ContactListScreenV2State extends State<ContactListScreen>
     // 3. Using environment variables
     // 4. Reading from shared preferences
 
-    // For now, return the static whoxachat.com link as requested
-    return 'https://whoxachat.com/invite';
+    // Return the default invite link from Constants
+    return Constants.defaultInviteLink;
   }
 
   // Method to get dynamic app name (currently static, can be made dynamic later)

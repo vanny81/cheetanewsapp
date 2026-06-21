@@ -1259,7 +1259,7 @@ class _HomeScreenState extends State<HomeScreen>
           onTap: () {
             FocusScope.of(context).unfocus();
             searchFocusNode.unfocus();
-            if (record?.chatId != null) {
+            if (record?.chatId != null && record!.chatId! > 0) {
               if (chatType.toLowerCase() == 'group') {
                 NavigationHelper.navigateToGroupChat(
                   context,
@@ -1282,6 +1282,19 @@ class _HomeScreenState extends State<HomeScreen>
                   profilePic: peer.profilePic ?? '',
                 );
               }
+            } else if (peer.userId != null && peer.userId! > 0) {
+              if (kDebugMode) {
+                debugPrint(
+                  'HomeScreen: Navigating to new individual chat from search with peerUser.userId: ${peer.userId}',
+                );
+              }
+              NavigationHelper.navigateToChat(
+                context,
+                chatId: 0,
+                userId: peer.userId!,
+                fullName: peer.fullName ?? 'unknown',
+                profilePic: peer.profilePic ?? '',
+              );
             }
           },
           child: Container(

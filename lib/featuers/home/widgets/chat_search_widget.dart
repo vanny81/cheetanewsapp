@@ -264,7 +264,7 @@ class _ChatSearchWidgetState extends State<ChatSearchWidget> {
 
     return InkWell(
       onTap: () {
-        if (record?.chatId != null) {
+        if (record?.chatId != null && record!.chatId! > 0) {
           // Close search and navigate to chat
           _clearSearch();
 
@@ -275,6 +275,17 @@ class _ChatSearchWidgetState extends State<ChatSearchWidget> {
             groupName: isGroupChat ? displayName : null,
             groupIcon: isGroupChat ? record.groupIcon : null,
             groupDescription: isGroupChat ? record.groupDescription : null,
+          );
+        } else if (peer.userId != null && peer.userId! > 0) {
+          _clearSearch();
+
+          widget.onChatTap(
+            0,
+            peer,
+            chatType: chatType,
+            groupName: isGroupChat ? displayName : null,
+            groupIcon: isGroupChat ? record?.groupIcon : null,
+            groupDescription: isGroupChat ? record?.groupDescription : null,
           );
         }
       },

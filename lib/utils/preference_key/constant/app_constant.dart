@@ -34,6 +34,7 @@ class Constants {
   static const String appName = 'Pucho';
   static const String appVersion = '1.0.0';
   static const String appBuildNumber = '1';
+  static const String defaultInviteLink = 'https://pagea.uk/my-app';
 
   // Cache settings
   static const int cacheDuration =
