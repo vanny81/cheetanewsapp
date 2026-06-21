@@ -92,45 +92,18 @@ Widget appLogoAppName({required double logheight, required double fontSize}) {
 
 Widget appDynamicLogo({double? height}) {
   final double imageHeight = SizeConfig.sizedBoxHeight(height ?? 66);
-
-  if (appLogo.toLowerCase().endsWith(".svg")) {
-    return SvgPicture.network(
-      appLogo,
-      height: imageHeight,
-      placeholderBuilder:
-          (context) => Icon(Icons.image_outlined, size: imageHeight),
-    );
-  } else {
-    return Image.network(
-      appLogo,
-      height: imageHeight,
-      errorBuilder: (context, error, stackTrace) {
-        return Icon(Icons.image_outlined, size: imageHeight);
-      },
-    );
-  }
+  return Image.asset(
+    AppAssets.mainAppLogo,
+    height: imageHeight,
+  );
 }
 
 Widget appDynamicLogoDark({double? height}) {
   final double imageHeight = SizeConfig.sizedBoxHeight(height ?? 66);
-  debugPrint('appLogoDark:$appLogoDarkMode');
-
-  if (appLogoDarkMode.toLowerCase().endsWith(".svg")) {
-    return SvgPicture.network(
-      appLogoDarkMode,
-      height: imageHeight,
-      placeholderBuilder:
-          (context) => Icon(Icons.image_outlined, size: imageHeight),
-    );
-  } else {
-    return Image.network(
-      appLogoDarkMode,
-      height: imageHeight,
-      errorBuilder: (context, error, stackTrace) {
-        return Icon(Icons.image_outlined, size: imageHeight);
-      },
-    );
-  }
+  return Image.asset(
+    AppAssets.mainAppLogo,
+    height: imageHeight,
+  );
 }
 
 bool isURL(String? text) {

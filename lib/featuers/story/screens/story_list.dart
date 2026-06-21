@@ -86,7 +86,7 @@ class _StoryListState extends State<StoryList> with TickerProviderStateMixin {
                 fontWeight: FontWeight.w600,
                 fontFamily: AppTypography.fontFamily.poppinsBold,
               ),
-            ), //appDynamicLogo(height: SizeConfig.sizedBoxHeight(31)),
+            ),
           ),
           body: Consumer<StoryProvider>(
             builder: (context, storyProvider, _) {

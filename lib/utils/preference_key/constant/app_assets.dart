@@ -1,4 +1,3 @@
-
 class AppAssets {
   static BottomNavIcons bottomNavIcons = BottomNavIcons();
   static HomeIcons homeIcons = HomeIcons();
@@ -13,6 +12,7 @@ class AppAssets {
   static DarkLightIcons darkLightIcons = DarkLightIcons();
 
   static const String chatAppLogo = "assets/images/svg/app_logo.svg";
+  static const String mainAppLogo = "assets/images/app_logo_small.png";
   static const String hand = "assets/images/hand_yellow.svg";
   static const String arrowright1 = "assets/images/arrow-right1.png";
   static const String trash = "assets/images/svg/trash_red.svg";

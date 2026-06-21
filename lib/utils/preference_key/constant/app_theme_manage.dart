@@ -231,14 +231,16 @@ class AppTheme {
   //****************************** Widget manage *********************************************/
 
   Widget get appDarkLightLogo =>
-      isLightModeGlobal
-          ? appDynamicLogo(height: SizeConfig.sizedBoxHeight(75))
-          : appDynamicLogoDark(height: SizeConfig.sizedBoxHeight(75));
+      Image.asset(
+        AppAssets.mainAppLogo,
+        height: SizeConfig.sizedBoxHeight(75),
+      );
 
   Widget get appHomelogo =>
-      isLightModeGlobal
-          ? appDynamicLogo(height: SizeConfig.sizedBoxHeight(50))
-          : appDynamicLogoDark(height: SizeConfig.sizedBoxHeight(50));
+      Image.asset(
+        AppAssets.mainAppLogo,
+        height: SizeConfig.sizedBoxHeight(50),
+      );
 
   //***************************************************************************/
 

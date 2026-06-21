@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:whoxa/featuers/auth/provider/stealth_provider.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:whoxa/widgets/global.dart';
 import 'package:whoxa/utils/preference_key/constant/app_assets.dart';
 import 'package:whoxa/utils/preference_key/constant/app_routes.dart';
 import 'package:whoxa/utils/preference_key/constant/app_colors.dart';
@@ -68,11 +66,14 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
     final stealthProvider = Provider.of<StealthProvider>(context);
 
     // Filter articles based on search query
-    final articles = stealthProvider.newsArticles.where((article) {
-      final title = article['title']?.toString().toLowerCase() ?? '';
-      final description = article['description']?.toString().toLowerCase() ?? '';
-      return title.contains(_searchQuery) || description.contains(_searchQuery);
-    }).toList();
+    final articles =
+        stealthProvider.newsArticles.where((article) {
+          final title = article['title']?.toString().toLowerCase() ?? '';
+          final description =
+              article['description']?.toString().toLowerCase() ?? '';
+          return title.contains(_searchQuery) ||
+              description.contains(_searchQuery);
+        }).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xff121212), // Premium dark background
@@ -86,21 +87,7 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.appPriSecColor.primaryColor,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: appLogo.isNotEmpty
-                    ? appDynamicLogo(height: 20)
-                    : SvgPicture.asset(
-                        AppAssets.chatAppLogo,
-                        height: 20,
-                        width: 20,
-                        colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
-                      ),
-              ),
+              Image.asset(AppAssets.mainAppLogo, height: 40, width: 40),
               const SizedBox(width: 8),
               const Text(
                 "CheetaNews",
@@ -139,17 +126,21 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
                     hintText: "Search latest news...",
                     hintStyle: const TextStyle(color: Colors.white38),
                     prefixIcon: const Icon(Icons.search, color: Colors.white38),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, color: Colors.white38),
-                            onPressed: () {
-                              setState(() {
-                                _searchController.clear();
-                                _searchQuery = "";
-                              });
-                            },
-                          )
-                        : null,
+                    suffixIcon:
+                        _searchQuery.isNotEmpty
+                            ? IconButton(
+                              icon: const Icon(
+                                Icons.clear,
+                                color: Colors.white38,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _searchController.clear();
+                                  _searchQuery = "";
+                                });
+                              },
+                            )
+                            : null,
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
@@ -164,21 +155,22 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
 
             // News List or Statuses
             Expanded(
-              child: stealthProvider.isLoadingNews
-                  ? _buildShimmerLoader()
-                  : stealthProvider.newsError != null
+              child:
+                  stealthProvider.isLoadingNews
+                      ? _buildShimmerLoader()
+                      : stealthProvider.newsError != null
                       ? _buildErrorView(stealthProvider.newsError!)
                       : articles.isEmpty
-                          ? _buildEmptyView()
-                          : ListView.builder(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              itemCount: articles.length,
-                              itemBuilder: (context, index) {
-                                final article = articles[index];
-                                return _buildNewsCard(article);
-                              },
-                            ),
+                      ? _buildEmptyView()
+                      : ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        itemCount: articles.length,
+                        itemBuilder: (context, index) {
+                          final article = articles[index];
+                          return _buildNewsCard(article);
+                        },
+                      ),
             ),
           ],
         ),
@@ -231,7 +223,7 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
               color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
-            )
+            ),
           ],
         ),
         child: Column(
@@ -249,22 +241,30 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
                   height: 180,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: Colors.white10,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(Color(0xffFCC604)),
+                  placeholder:
+                      (context, url) => Container(
+                        color: Colors.white10,
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation(
+                              Color(0xffFCC604),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: Colors.white10,
-                    height: 180,
-                    child: const Center(
-                      child: Icon(Icons.broken_image, color: Colors.white38, size: 40),
-                    ),
-                  ),
+                  errorWidget:
+                      (context, url, error) => Container(
+                        color: Colors.white10,
+                        height: 180,
+                        child: const Center(
+                          child: Icon(
+                            Icons.broken_image,
+                            color: Colors.white38,
+                            size: 40,
+                          ),
+                        ),
+                      ),
                 ),
               ),
 
@@ -279,9 +279,13 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          color: AppColors.appPriSecColor.primaryColor.withValues(alpha: 0.15),
+                          color: AppColors.appPriSecColor.primaryColor
+                              .withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -377,7 +381,11 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
                     children: [
                       Container(height: 12, width: 80, color: Colors.white10),
                       const SizedBox(height: 12),
-                      Container(height: 16, width: double.infinity, color: Colors.white10),
+                      Container(
+                        height: 16,
+                        width: double.infinity,
+                        color: Colors.white10,
+                      ),
                       const SizedBox(height: 8),
                       Container(height: 14, width: 200, color: Colors.white10),
                     ],
@@ -408,7 +416,10 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Provider.of<StealthProvider>(context, listen: false).fetchNews(forceRefresh: true);
+                Provider.of<StealthProvider>(
+                  context,
+                  listen: false,
+                ).fetchNews(forceRefresh: true);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.appPriSecColor.primaryColor,
@@ -417,7 +428,10 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text("Try Again", style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                "Try Again",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -427,11 +441,11 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
 
   Widget _buildEmptyView() {
     return const Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.search_off, color: Colors.white38, size: 64),
-        SizedBox(height: 16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search_off, color: Colors.white38, size: 64),
+          SizedBox(height: 16),
           Text(
             "No articles match your search.",
             style: TextStyle(color: Colors.white60, fontSize: 14),

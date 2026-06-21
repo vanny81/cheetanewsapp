@@ -156,7 +156,11 @@ class _OtpScreenState extends State<OtpScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SizedBox(height: SizeConfig.height(3)),
-                      appDynamicLogo(height: 50),
+                      Image.asset(
+                        AppAssets.mainAppLogo,
+                        height: 50,
+                        width: 50,
+                      ),
                       SizedBox(height: SizeConfig.height(7)),
                       container(
                         context,

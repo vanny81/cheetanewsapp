@@ -98,7 +98,7 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
                   fontWeight: FontWeight.w600,
                   fontFamily: AppTypography.fontFamily.poppinsBold,
                 ),
-              ), //appDynamicLogo(height: SizeConfig.sizedBoxHeight(31)),
+              ),
               toolbarHeight: kToolbarHeight,
               actions: [
                 Consumer<CallHistoryProvider>(
