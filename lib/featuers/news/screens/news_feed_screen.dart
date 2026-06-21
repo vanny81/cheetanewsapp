@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:whoxa/featuers/auth/provider/stealth_provider.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:whoxa/widgets/global.dart';
+import 'package:whoxa/utils/preference_key/constant/app_assets.dart';
 import 'package:whoxa/utils/preference_key/constant/app_routes.dart';
 import 'package:whoxa/utils/preference_key/constant/app_colors.dart';
 
@@ -89,11 +92,14 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
                   color: AppColors.appPriSecColor.primaryColor,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
-                  Icons.newspaper,
-                  color: Colors.black,
-                  size: 20,
-                ),
+                child: appLogo.isNotEmpty
+                    ? appDynamicLogo(height: 20)
+                    : SvgPicture.asset(
+                        AppAssets.chatAppLogo,
+                        height: 20,
+                        width: 20,
+                        colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+                      ),
               ),
               const SizedBox(width: 8),
               const Text(

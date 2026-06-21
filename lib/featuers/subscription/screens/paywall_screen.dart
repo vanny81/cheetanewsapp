@@ -753,7 +753,57 @@ class _PaywallScreenState extends State<PaywallScreen> {
           ),
         ),
       ),
-
+      const SizedBox(height: 20),
+      // Support Card
+      GestureDetector(
+        onTap: () {
+          Navigator.pushNamed(context, AppRoutes.support);
+        },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            color: const Color(0xff1C1C1E),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.08),
+              width: 1.0,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.appPriSecColor.primaryColor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.support_agent,
+                  color: AppColors.appPriSecColor.primaryColor,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Text(
+                  "need help? contact support team",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right,
+                color: Colors.white38,
+              ),
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(height: 16),
             ],
           ),
         ),

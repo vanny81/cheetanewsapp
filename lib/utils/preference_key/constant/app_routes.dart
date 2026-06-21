@@ -26,6 +26,7 @@ import 'package:whoxa/screens/splash_screen.dart';
 import 'package:whoxa/featuers/news/screens/news_feed_screen.dart';
 import 'package:whoxa/featuers/auth/screens/stealth_pin_screen.dart';
 import 'package:whoxa/featuers/subscription/screens/paywall_screen.dart';
+import 'package:whoxa/featuers/support/screens/support_screen.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -73,6 +74,8 @@ class AppRoutes {
 
   //group
   static const String groupInfo = '/group-info';
+  static const String support = '/support';
+
   // Story chat screens navigations
   static const String storyUpload = '/storyUpload';
   static const String myStoryView = "/myStoryView";
@@ -246,6 +249,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const StealthPinScreen());
       case paywall:
         return MaterialPageRoute(builder: (_) => const PaywallScreen());
+      case support:
+        return MaterialPageRoute(builder: (_) => const SupportScreen());
       case '/': // Handle root route
         return MaterialPageRoute(builder: (_) => const SplashScreen());
       default:
