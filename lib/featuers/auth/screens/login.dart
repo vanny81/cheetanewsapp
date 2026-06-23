@@ -462,9 +462,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                       ),
-                      // Demo Credentials Section - Moved outside the card
-                      SizedBox(height: SizeConfig.height(3)),
-                      _buildDemoCredentials(authProvider),
+
                     ],
                   ),
                 ),
@@ -476,103 +474,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // Demo Credentials Widget
-  Widget _buildDemoCredentials(AuthProvider authProvider) {
-    final code = "+1";
-    final flagCode = "US";
-    final countryName = "United States";
-    final demoNmuber = "5628532467";
-    return Padding(
-      padding: SizeConfig.getPaddingSymmetric(horizontal: 15),
-      child: Stack(
-        children: [
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppColors.appPriSecColor.primaryColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: SizeConfig.height(1.5)),
-                Padding(
-                  padding: SizeConfig.getPaddingSymmetric(horizontal: 20),
-                  child: Text(
-                    'For Demo',
-                    style: TextStyle(
-                      fontSize: SizeConfig.getFontSize(16),
-                      fontWeight: FontWeight.w700,
-                      fontFamily: 'Poppins',
-                      color: AppColors.white,
-                    ),
-                  ),
-                ),
-                SizedBox(height: SizeConfig.height(0.8)),
-                Padding(
-                  padding: SizeConfig.getPaddingSymmetric(horizontal: 20),
-                  child: Divider(
-                    color: AppColors.white.withValues(alpha: 0.3),
-                    thickness: 1,
-                  ),
-                ),
-                SizedBox(height: SizeConfig.height(1)),
-                Padding(
-                  padding: SizeConfig.getPaddingSymmetric(horizontal: 20),
-                  child: Text(
-                    'Mobile Number: $code $demoNmuber',
-                    style: TextStyle(
-                      fontSize: SizeConfig.getFontSize(14),
-                      fontWeight: FontWeight.w500,
-                      fontFamily: 'Poppins',
-                      color: AppColors.white,
-                    ),
-                  ),
-                ),
-                SizedBox(height: SizeConfig.height(1)),
-                Padding(
-                  padding: SizeConfig.getPaddingSymmetric(horizontal: 20),
-                  child: Text(
-                    'OTP: 123456',
-                    style: TextStyle(
-                      fontSize: SizeConfig.getFontSize(14),
-                      fontWeight: FontWeight.w500,
-                      fontFamily: 'Poppins',
-                      color: AppColors.white,
-                    ),
-                  ),
-                ),
-                SizedBox(height: SizeConfig.height(1.5)),
-              ],
-            ),
-          ),
-          Positioned(
-            top: 10,
-            right: 15,
-            child: GestureDetector(
-              onTap: () {
-                // Copy the demo phone number to the text field
-                authProvider.selectedCountrycode = code;
-                authProvider.mobilecontroller.text = demoNmuber;
-                authProvider.defaultCountrySortName = flagCode; // US
-                authProvider.defaultSelectedCountry =
-                    countryName; // United States
-                setState(() {});
-              },
-              child: Container(
-                padding: EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Icon(Icons.copy, color: AppColors.white, size: 18),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 Widget loginType(BuildContext context, AuthProvider authProvider) {

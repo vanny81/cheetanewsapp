@@ -521,9 +521,7 @@ class _OtpScreenState extends State<OtpScreen> {
                           ),
                         ),
                       ),
-                      // Demo OTP Section - Moved outside the card
-                      SizedBox(height: SizeConfig.height(3)),
-                      _buildDemoOTP(authProvider),
+
                     ],
                   ),
                 ),
@@ -531,102 +529,6 @@ class _OtpScreenState extends State<OtpScreen> {
             );
           },
         ),
-      ),
-    );
-  }
-
-  // Demo OTP Widget
-  Widget _buildDemoOTP(AuthProvider authProvider) {
-    return Padding(
-      padding: SizeConfig.getPaddingSymmetric(horizontal: 15),
-      child: Stack(
-        children: [
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppColors.appPriSecColor.primaryColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: SizeConfig.height(1.5)),
-                Padding(
-                  padding: SizeConfig.getPaddingSymmetric(horizontal: 20),
-                  child: Text(
-                    'For Demo',
-                    style: TextStyle(
-                      fontSize: SizeConfig.getFontSize(16),
-                      fontWeight: FontWeight.w700,
-                      fontFamily: 'Poppins',
-                      color: AppColors.white,
-                    ),
-                  ),
-                ),
-                SizedBox(height: SizeConfig.height(0.8)),
-                Padding(
-                  padding: SizeConfig.getPaddingSymmetric(horizontal: 20),
-                  child: Divider(
-                    color: AppColors.white.withValues(alpha: 0.3),
-                    thickness: 1,
-                  ),
-                ),
-                SizedBox(height: SizeConfig.height(1)),
-                Padding(
-                  padding: SizeConfig.getPaddingSymmetric(horizontal: 20),
-                  child: Text(
-                    'Note: In this demo version Use the OTP',
-                    style: TextStyle(
-                      fontSize: SizeConfig.getFontSize(13),
-                      fontWeight: FontWeight.w500,
-                      fontFamily: 'Poppins',
-                      color: AppColors.white,
-                    ),
-                  ),
-                ),
-                SizedBox(height: SizeConfig.height(1)),
-                Padding(
-                  padding: SizeConfig.getPaddingSymmetric(horizontal: 20),
-                  child: Text(
-                    'OTP: 123456',
-                    style: TextStyle(
-                      fontSize: SizeConfig.getFontSize(16),
-                      fontWeight: FontWeight.w700,
-                      fontFamily: 'Poppins',
-                      color: AppColors.white,
-                    ),
-                  ),
-                ),
-                SizedBox(height: SizeConfig.height(1.5)),
-              ],
-            ),
-          ),
-          Positioned(
-            top: 10,
-            right: 15,
-            child: GestureDetector(
-              onTap: () {
-                // Copy the demo OTP to the text field
-                authProvider.otpController.text = "123456";
-                setState(() {
-                  authProvider.isOtpValidationTriggered = false;
-                });
-              },
-              child: Container(
-                padding: EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Icon(
-                  Icons.copy,
-                  color: AppColors.white,
-                  size: 18,
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
