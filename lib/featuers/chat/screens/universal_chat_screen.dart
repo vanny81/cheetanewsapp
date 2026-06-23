@@ -6,7 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:giphy_get/giphy_get.dart';
+import 'package:whoxa/featuers/chat/widgets/emoji_gif_sticker_panel.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:whoxa/featuers/chat/screens/location.dart';
@@ -140,6 +140,7 @@ class _UniversalChatScreenState extends State<UniversalChatScreen>
   // bool _hasError = false;
   // String? _errorMessage;
   bool _isAttachmentMenuOpen = false;
+  bool _isEmojiPanelOpen = false;
   bool _isClearingChat = false;
 
   // New message notification system
@@ -4499,6 +4500,7 @@ class _UniversalChatScreenState extends State<UniversalChatScreen>
                             onTap: () {
                               setState(() {
                                 _isAttachmentMenuOpen = false;
+                                _isEmojiPanelOpen = false;
                               });
                             },
                             onTapSendMsg: () {
@@ -4514,10 +4516,23 @@ class _UniversalChatScreenState extends State<UniversalChatScreen>
                                 setState(() {
                                   _isAttachmentMenuOpen =
                                       !_isAttachmentMenuOpen;
+                                  _isEmojiPanelOpen = false;
                                 });
                                 closeKeyboard();
                               }
                             },
+                            onTapEmoji: () {
+                              if (!_chatProvider!.isDisposedOfChat && mounted) {
+                                setState(() {
+                                  _isEmojiPanelOpen = !_isEmojiPanelOpen;
+                                  _isAttachmentMenuOpen = false;
+                                });
+                                if (_isEmojiPanelOpen) {
+                                  closeKeyboard();
+                                }
+                              }
+                            },
+                            isEmojiPanelOpen: _isEmojiPanelOpen,
                             onTapCamera: () => _sendImage(isFromGallery: false),
                             onChanged: (text) {
                               debugPrint(
@@ -4551,6 +4566,23 @@ class _UniversalChatScreenState extends State<UniversalChatScreen>
                             },
                             isLoading: isLoading,
                           ),
+                      // Emoji/GIF/Sticker panel
+                      if (_isEmojiPanelOpen)
+                        EmojiGifStickerPanel(
+                          textController: _messageController,
+                          onGifSelected: (url) {
+                            _sendGifFromUrl(url);
+                            setState(() {
+                              _isEmojiPanelOpen = false;
+                            });
+                          },
+                          onStickerSelected: (url) {
+                            _sendStickerFromUrl(url);
+                            setState(() {
+                              _isEmojiPanelOpen = false;
+                            });
+                          },
+                        ),
                     ],
                   );
             },
@@ -4675,12 +4707,12 @@ class _UniversalChatScreenState extends State<UniversalChatScreen>
               icon: Icons.gif, // GIF
               title: AppString.gif,
               onTap: () {
-                // Dismiss the attachment menu first
+                // Dismiss attachment menu and open emoji panel on GIF tab
                 setState(() {
                   _isAttachmentMenuOpen = false;
+                  _isEmojiPanelOpen = true;
                 });
-                // Then call _sendGif
-                _sendGif();
+                closeKeyboard();
               },
             ),
             _buildAttachmentOption(
@@ -5373,125 +5405,103 @@ class _UniversalChatScreenState extends State<UniversalChatScreen>
     }
   }
 
-  Future<void> _sendGif() async {
+  /// Send a GIF from a Giphy URL (called by the EmojiGifStickerPanel)
+  Future<void> _sendGifFromUrl(String gifUrl) async {
     if (_chatProvider!.isDisposedOfChat || !mounted) return;
+    if (gifUrl.isEmpty) return;
 
     try {
-      _logger.d("Starting GIF picker...");
+      _logger.d("Sending GIF from URL: $gifUrl");
 
-      // Launch Giphy GIF picker
-      final gif = await GiphyGet.getGif(
-        context: context,
-        apiKey:
-            "rAw1eL2UQZBkFdNsKjCsCAJNBT4Lrslg", // Demo key - replace with your actual Giphy API key later
-        lang: GiphyLanguage.english,
-        randomID: "abcd", // Optional: for analytics
-        searchText: "Search GIFs", // Placeholder text
-        tabColor: AppColors.appPriSecColor.primaryColor,
-        debounceTimeInMilliseconds: 350,
-      );
+      final chatProvider =
+          _chatProvider ?? Provider.of<ChatProvider>(context, listen: false);
+      final chatId = widget.chatId ?? 0;
+      final replyToMessageId = chatProvider.replyToMessage?.messageId;
 
-      _logger.d(
-        "GIF picker result: ${gif != null ? 'GIF selected' : 'No GIF selected'}",
-      );
+      chatProvider
+          .sendMessage(
+            chatId: chatId,
+            gifUrl,
+            messageType: MessageType.Gif,
+            replyToMessageId: replyToMessageId,
+          )
+          .then((success) {
+            _logger.d("GIF message send result: $success");
 
-      if (gif != null && !_chatProvider!.isDisposedOfChat && mounted) {
-        _logger.d("GIF object: ${gif.toString()}");
-        _logger.d("GIF images: ${gif.images?.toString()}");
-
-        // Get the GIF URL - try different formats
-        String? gifUrl;
-
-        // Try original first
-        if (gif.images?.original != null) {
-          gifUrl = gif.images!.original!.url;
-        }
-
-        // Fallback to fixed height
-        if ((gifUrl == null || gifUrl.isEmpty) &&
-            gif.images?.fixedHeight != null) {
-          gifUrl = gif.images!.fixedHeight!.url;
-        }
-
-        // Fallback to downsized
-        if ((gifUrl == null || gifUrl.isEmpty) &&
-            gif.images?.downsized != null) {
-          gifUrl = gif.images!.downsized!.url;
-        }
-
-        // Try different properties if above don't work
-        if (gifUrl == null || gifUrl.isEmpty) {
-          gifUrl = gif.url ?? gif.bitlyGifUrl ?? gif.bitlyUrl;
-        }
-
-        _logger.d("Extracted GIF URL: $gifUrl");
-
-        if (gifUrl != null && gifUrl.isNotEmpty) {
-          // Send the GIF URL directly as message content
-          final chatProvider =
-              _chatProvider ??
-              Provider.of<ChatProvider>(context, listen: false);
-          final chatId = widget.chatId ?? 0;
-
-          final replyToMessageId = chatProvider.replyToMessage?.messageId;
-
-          _logger.d(
-            "Sending GIF message - ChatID: $chatId, URL: $gifUrl, MessageType: ${MessageType.Gif}",
-          );
-
-          // For GIF URLs from external sources (like Giphy), we send them directly
-          chatProvider
-              .sendMessage(
-                chatId: chatId,
-                gifUrl,
-                messageType: MessageType.Gif,
-                replyToMessageId: replyToMessageId,
-              )
-              .then((success) {
-                _logger.d("GIF message send result: $success");
-
-                if (!_chatProvider!.isDisposedOfChat && mounted && success) {
-                  // Clear reply message if it exists
-                  if (chatProvider.replyToMessage != null) {
-                    chatProvider.clearReply();
-                  }
-
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _scrollToBottom(forceScroll: true);
-                  });
-                } else {
-                  _logger.e("Failed to send GIF message");
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(AppString.failedToSendGIFPleaseTryAgain),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                }
-                closeKeyboard();
+            if (!_chatProvider!.isDisposedOfChat && mounted && success) {
+              if (chatProvider.replyToMessage != null) {
+                chatProvider.clearReply();
+              }
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _scrollToBottom(forceScroll: true);
               });
-        } else {
-          _logger.e("GIF URL is null or empty");
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(AppString.couldGIFURLPleaseTryAgain),
-                backgroundColor: Colors.orange,
-              ),
-            );
-          }
-        }
-      } else {
-        _logger.d("GIF picker was cancelled or returned null");
-      }
+            } else if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(AppString.failedToSendGIFPleaseTryAgain),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          });
     } catch (e) {
-      _logger.e("Error picking GIF: $e");
+      _logger.e("Error sending GIF: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppString.errorSelectingGIFPleaseTryAgain),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Send a sticker from a Giphy URL (called by the EmojiGifStickerPanel)
+  Future<void> _sendStickerFromUrl(String stickerUrl) async {
+    if (_chatProvider!.isDisposedOfChat || !mounted) return;
+    if (stickerUrl.isEmpty) return;
+
+    try {
+      _logger.d("Sending Sticker from URL: $stickerUrl");
+
+      final chatProvider =
+          _chatProvider ?? Provider.of<ChatProvider>(context, listen: false);
+      final chatId = widget.chatId ?? 0;
+      final replyToMessageId = chatProvider.replyToMessage?.messageId;
+
+      chatProvider
+          .sendMessage(
+            chatId: chatId,
+            stickerUrl,
+            messageType: MessageType.Sticker,
+            replyToMessageId: replyToMessageId,
+          )
+          .then((success) {
+            _logger.d("Sticker message send result: $success");
+
+            if (!_chatProvider!.isDisposedOfChat && mounted && success) {
+              if (chatProvider.replyToMessage != null) {
+                chatProvider.clearReply();
+              }
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _scrollToBottom(forceScroll: true);
+              });
+            } else if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to send sticker. Please try again.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          });
+    } catch (e) {
+      _logger.e("Error sending sticker: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error sending sticker. Please try again.'),
             backgroundColor: Colors.red,
           ),
         );

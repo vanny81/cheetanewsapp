@@ -14,6 +14,8 @@ class MessageTypeUtils {
         return "video";
       case MessageType.Gif:
         return "gif";
+      case MessageType.Sticker:
+        return "sticker";
       case MessageType.Location:
         return "location";
       case MessageType.Social:
@@ -40,6 +42,8 @@ class MessageTypeUtils {
         return MessageType.Video;
       case "gif":
         return MessageType.Gif;
+      case "sticker":
+        return MessageType.Sticker;
       case "location":
         return MessageType.Location;
       case "social":
@@ -68,6 +72,8 @@ class MessageTypeUtils {
         return "Video";
       case MessageType.Gif:
         return "GIF";
+      case MessageType.Sticker:
+        return "Sticker";
       case MessageType.Location:
         return "Location";
       case MessageType.Social:

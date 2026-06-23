@@ -15,7 +15,9 @@ class ChatKeyboard extends StatelessWidget {
   final Function() onTapCamera;
   final Function(String)? onChanged;
   final Function()? onTap;
+  final Function()? onTapEmoji;
   final bool isLoading;
+  final bool isEmojiPanelOpen;
 
   const ChatKeyboard({
     super.key,
@@ -26,7 +28,9 @@ class ChatKeyboard extends StatelessWidget {
     required this.onTapCamera,
     this.onChanged,
     this.onTap,
+    this.onTapEmoji,
     this.isLoading = false,
+    this.isEmojiPanelOpen = false,
   });
 
   @override
@@ -39,6 +43,27 @@ class ChatKeyboard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // Emoji toggle button
+            if (onTapEmoji != null)
+              Padding(
+                padding: SizeConfig.getPaddingOnly(right: 8),
+                child: InkWell(
+                  onTap: onTapEmoji,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      isEmojiPanelOpen
+                          ? Icons.keyboard_outlined
+                          : Icons.emoji_emotions_outlined,
+                      color: isEmojiPanelOpen
+                          ? AppColors.appPriSecColor.primaryColor
+                          : AppThemeManage.appTheme.pinColor,
+                      size: 24,
+                    ),
+                  ),
+                ),
+              ),
             Expanded(
               child: TextFormField(
                 controller: controller,

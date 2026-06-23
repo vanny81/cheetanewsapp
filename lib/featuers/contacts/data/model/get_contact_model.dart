@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 
 class GetContactModel {
   final bool? status;
@@ -60,20 +61,46 @@ class GetContactData {
       lastName: json['last_name'] as String?,
       countryCode: json['country_code'] as String?,
       country: json['country'] as String?,
-      contactDetails:
-          json['contact_details'] != null
-              ? (json['contact_details'] as List).map((item) {
-                try {
-                  return item != null
-                      ? ContactDetails.fromJson(item as Map<String, dynamic>)
-                      : null;
-                } catch (e) {
-                  debugPrint('Error parsing contact detail: $e');
-                  return null;
-                }
-              }).toList()
-              : null,
+      contactDetails: _parseContactDetails(json['contact_details']),
     );
+  }
+
+  static List<ContactDetails?>? _parseContactDetails(dynamic value) {
+    if (value == null) return null;
+    if (value is String) {
+      try {
+        final decoded = jsonDecode(value);
+        if (decoded is List) {
+          return decoded.map((item) => _parseSingleContactDetail(item)).toList();
+        }
+      } catch (e) {
+        debugPrint('Error decoding contact_details string: $e');
+      }
+    } else if (value is List) {
+      return value.map((item) => _parseSingleContactDetail(item)).toList();
+    }
+    return null;
+  }
+
+  static ContactDetails? _parseSingleContactDetail(dynamic item) {
+    if (item == null) return null;
+    if (item is String) {
+      try {
+        final decoded = jsonDecode(item);
+        if (decoded is Map<String, dynamic>) {
+          return ContactDetails.fromJson(decoded);
+        } else if (decoded is Map) {
+          return ContactDetails.fromJson(Map<String, dynamic>.from(decoded));
+        }
+      } catch (e) {
+        debugPrint('Error decoding single contact detail: $e');
+      }
+    } else if (item is Map<String, dynamic>) {
+      return ContactDetails.fromJson(item);
+    } else if (item is Map) {
+      return ContactDetails.fromJson(Map<String, dynamic>.from(item));
+    }
+    return null;
   }
 
   static int? _parseInt(dynamic value) {

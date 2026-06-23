@@ -11,6 +11,7 @@ enum ChatType {
   audio,
   link,
   gif,
+  sticker,
   contact,
   story_reply,
 }
@@ -64,6 +65,7 @@ enum MessageType {
   Video,
   File,
   Gif,
+  Sticker,
   Location,
   Social,
   Contact,
@@ -92,6 +94,8 @@ MessageType stringToMessageType(String? messageTypeString) {
       return MessageType.Video;
     case 'gif':
       return MessageType.Gif;
+    case 'sticker':
+      return MessageType.Sticker;
     case 'location':
       return MessageType.Location;
     case 'social':
@@ -135,6 +139,8 @@ String messageContentWithEmojiSafe(
       return "🎥 Video";
     case MessageType.Gif:
       return "🎭 GIF";
+    case MessageType.Sticker:
+      return "🎨 Sticker";
     case MessageType.Location:
       return "📍 Location";
     case MessageType.Link:

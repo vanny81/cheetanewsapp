@@ -2150,8 +2150,42 @@ class ChatProvider with ChangeNotifier {
               // Find the participant who is NOT the current user
               Map<String, dynamic>? otherUserData;
               for (var participant in participants) {
-                final userData =
-                    participant['User'] as Map<String, dynamic>? ?? {};
+                if (participant == null) continue;
+
+                Map<dynamic, dynamic>? participantMap;
+                if (participant is Map) {
+                  participantMap = participant;
+                } else if (participant is String) {
+                  try {
+                    final decoded = jsonDecode(participant);
+                    if (decoded is Map) {
+                      participantMap = decoded;
+                    }
+                  } catch (e) {
+                    _logger.e('Error decoding participant string: $e');
+                  }
+                }
+
+                if (participantMap == null) continue;
+
+                final userRaw = participantMap['User'] ?? participantMap['user'];
+                Map<String, dynamic>? userData;
+                if (userRaw is Map<String, dynamic>) {
+                  userData = userRaw;
+                } else if (userRaw is Map) {
+                  userData = Map<String, dynamic>.from(userRaw);
+                } else if (userRaw is String) {
+                  try {
+                    final decoded = jsonDecode(userRaw);
+                    if (decoded is Map) {
+                      userData = Map<String, dynamic>.from(decoded);
+                    }
+                  } catch (e) {
+                    _logger.e('Error decoding User string: $e');
+                  }
+                }
+
+                if (userData == null) continue;
                 final participantUserId = userData['user_id'] as int? ?? 0;
 
                 if (participantUserId != currentUserIdInt &&
@@ -2201,11 +2235,22 @@ class ChatProvider with ChangeNotifier {
               messages: lastMessage != null ? [lastMessage] : [],
               unseenCount:
                   0, // Search results don't typically include unseen count
-              blockedBy:
-                  (chatData['blocked_by'] as List<dynamic>?)
-                      ?.map((e) => e.toString())
-                      .toList() ??
-                  [],
+              blockedBy: () {
+                final bb = chatData['blocked_by'];
+                if (bb == null) return <String>[];
+                if (bb is List) {
+                  return bb.map((e) => e.toString()).toList();
+                }
+                if (bb is String) {
+                  try {
+                    final decoded = jsonDecode(bb);
+                    if (decoded is List) {
+                      return decoded.map((e) => e.toString()).toList();
+                    }
+                  } catch (_) {}
+                }
+                return <String>[];
+              }(),
             );
 
             // Create the chat item
@@ -3278,6 +3323,9 @@ class ChatProvider with ChangeNotifier {
           case MessageType.Gif:
             finalMessageContent = "Shared a GIF";
             break;
+          case MessageType.Sticker:
+            finalMessageContent = "Shared a sticker";
+            break;
           case MessageType.StoryReply:
             finalMessageContent = messageContent;
             break;
@@ -3362,19 +3410,19 @@ class ChatProvider with ChangeNotifier {
       }
 
       // Validate that required files are present
-      // Special case: GIF URLs from external sources (like Giphy) don't need files
-      bool isGifUrl =
-          messageType == MessageType.Gif &&
+      // Special case: GIF/Sticker URLs from external sources (like Giphy) don't need files
+      bool isExternalMediaUrl =
+          (messageType == MessageType.Gif || messageType == MessageType.Sticker) &&
           messageContent.startsWith('http') &&
-          messageContent.contains('gif');
+          (messageContent.contains('gif') || messageContent.contains('giphy'));
 
       _logger.d(
-        'File upload validation - MessageType: $messageType, RequiresUpload: ${MessageTypeUtils.requiresFileUpload(messageType)}, FilePaths empty: ${filePaths.isEmpty}, IsGifUrl: $isGifUrl, MessageContent: $messageContent',
+        'File upload validation - MessageType: $messageType, RequiresUpload: ${MessageTypeUtils.requiresFileUpload(messageType)}, FilePaths empty: ${filePaths.isEmpty}, IsExternalMediaUrl: $isExternalMediaUrl, MessageContent: $messageContent',
       );
 
       if (MessageTypeUtils.requiresFileUpload(messageType) &&
           filePaths.isEmpty &&
-          !isGifUrl) {
+          !isExternalMediaUrl) {
         _logger.e('File upload validation failed - throwing exception');
         throw Exception(
           'File upload required but no files provided for message type: $messageType',

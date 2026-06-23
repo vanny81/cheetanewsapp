@@ -8,6 +8,7 @@ import 'package:whoxa/featuers/chat/provider/chat_provider.dart';
 import 'package:whoxa/featuers/chat/widgets/current_chat_widget/delete_message_widget.dart';
 import 'package:whoxa/featuers/chat/widgets/current_chat_widget/document_message_widget.dart';
 import 'package:whoxa/featuers/chat/widgets/current_chat_widget/gif_message_widget.dart';
+import 'package:whoxa/featuers/chat/widgets/current_chat_widget/sticker_message_widget.dart';
 import 'package:whoxa/featuers/chat/widgets/current_chat_widget/group_created_widget.dart';
 import 'package:whoxa/featuers/chat/widgets/current_chat_widget/image_message_widget.dart';
 import 'package:whoxa/featuers/chat/widgets/current_chat_widget/link_message_widget.dart';
@@ -103,6 +104,15 @@ class MessageContentWidget extends StatelessWidget {
           chat: chat,
           currentUserId: currentUserId,
           onTap: () => onImageTap?.call(chat.messageContent ?? ''),
+          isStarred: isStarred,
+          onReplyTap: onReplyTap,
+          isForPinned: false,
+        );
+
+      case 'sticker':
+        return StickerMessageWidget(
+          chat: chat,
+          currentUserId: currentUserId,
           isStarred: isStarred,
           onReplyTap: onReplyTap,
           isForPinned: false,
