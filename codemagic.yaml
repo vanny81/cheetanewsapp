@@ -1,9 +1,55 @@
 workflows:
+  # ── Debug / Ad-Hoc build (for testing on registered devices) ──
+  ios-debug:
+    name: iOS Debug Build
+    instance_type: mac_mini_m2
+    max_build_duration: 30
+    integrations:
+      app_store_connect: YOUR_API_KEY_NAME  # TODO: Replace with your API key name from Codemagic settings
+    environment:
+      ios_signing:
+        distribution_type: ad_hoc
+        bundle_identifier: com.cheetanews.chat
+      flutter: stable
+    scripts:
+      - name: Clean
+        script: flutter clean
+      - name: Get dependencies
+        script: flutter pub get
+      - name: Pod install
+        script: |
+          cd ios && rm -rf Pods Podfile.lock .symlinks && pod install --repo-update && cd ..
+      - name: Build debug IPA
+        script: flutter build ipa --debug --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+  # ── Release build (for App Store / TestFlight) ──
   ios-release:
     name: iOS Release Build
+    instance_type: mac_mini_m2
+    max_build_duration: 30
+    integrations:
+      app_store_connect: YOUR_API_KEY_NAME  # TODO: Replace with your API key name from Codemagic settings
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.cheetanews.chat
+      flutter: stable
     scripts:
-      - flutter clean
-      - echo "Starting iOS Release Build" > build.txt
-      - flutter pub get
-      - cd ios && rm -rf Pods Podfile.lock .symlinks && pod install --repo-update && cd ..
-      - flutter build ipa --release
+      - name: Clean
+        script: flutter clean
+      - name: Get dependencies
+        script: flutter pub get
+      - name: Pod install
+        script: |
+          cd ios && rm -rf Pods Podfile.lock .symlinks && pod install --repo-update && cd ..
+      - name: Build release IPA
+        script: flutter build ipa --release --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration

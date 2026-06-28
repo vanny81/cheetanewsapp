@@ -49,23 +49,24 @@ class _PaywallScreenState extends State<PaywallScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const AlertDialog(
-        backgroundColor: Color(0xff121212),
-        content: Row(
-          children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation(Color(0xff00c32b)),
+      builder:
+          (context) => const AlertDialog(
+            backgroundColor: Color(0xff121212),
+            content: Row(
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation(Color(0xff00c32b)),
+                ),
+                SizedBox(width: 20),
+                Expanded(
+                  child: Text(
+                    "Syncing subscription state...",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
             ),
-            SizedBox(width: 20),
-            Expanded(
-              child: Text(
-                "Syncing subscription state...",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
 
     try {
@@ -77,7 +78,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
       );
 
       if (!mounted) return;
-      final stealthProvider = Provider.of<StealthProvider>(context, listen: false);
+      final stealthProvider = Provider.of<StealthProvider>(
+        context,
+        listen: false,
+      );
       await stealthProvider.syncSubscriptionWithBackend();
 
       if (!mounted) return;
@@ -118,7 +122,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
           );
         }
       } else {
-        _showErrorSnackBar(verifyResponse?['error']?.toString() ?? "Failed to verify transaction.");
+        _showErrorSnackBar(
+          verifyResponse?['error']?.toString() ??
+              "Failed to verify transaction.",
+        );
       }
     } catch (e) {
       if (!mounted) return;
@@ -131,29 +138,33 @@ class _PaywallScreenState extends State<PaywallScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const AlertDialog(
-        backgroundColor: Color(0xff121212),
-        content: Row(
-          children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation(Color(0xff00c32b)),
+      builder:
+          (context) => const AlertDialog(
+            backgroundColor: Color(0xff121212),
+            content: Row(
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation(Color(0xff00c32b)),
+                ),
+                SizedBox(width: 20),
+                Expanded(
+                  child: Text(
+                    "Syncing subscription state...",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
             ),
-            SizedBox(width: 20),
-            Expanded(
-              child: Text(
-                "Syncing subscription state...",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
 
     await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
-    final stealthProvider = Provider.of<StealthProvider>(context, listen: false);
+    final stealthProvider = Provider.of<StealthProvider>(
+      context,
+      listen: false,
+    );
     await stealthProvider.syncSubscriptionWithBackend();
 
     if (!mounted) return;
@@ -218,7 +229,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
             children: [
               // Header
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: const BoxDecoration(
                   color: Color(0xff121212),
                   borderRadius: BorderRadius.only(
@@ -231,7 +245,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   children: [
                     const Text(
                       "Secure Mock Checkout",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close, color: Colors.white),
@@ -252,9 +269,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   onLoadStop: (controller, loadedUrl) {
                     final urlString = loadedUrl?.toString() ?? "";
                     debugPrint("WebView Loaded URL: $urlString");
-                    
+
                     // Detect PayStack success callback/redirection
-                    if (urlString.contains("/payment/success") || 
+                    if (urlString.contains("/payment/success") ||
                         urlString.contains("payment-success")) {
                       if (mounted) {
                         Navigator.pop(context); // Close WebView sheet
@@ -271,14 +288,17 @@ class _PaywallScreenState extends State<PaywallScreen> {
     ).then((_) {
       if (!mounted) return;
       // Sync subscription state when webview sheet is closed (just in case they completed but closed early)
-      final stealthProvider = Provider.of<StealthProvider>(context, listen: false);
+      final stealthProvider = Provider.of<StealthProvider>(
+        context,
+        listen: false,
+      );
       stealthProvider.syncSubscriptionWithBackend();
     });
   }
 
   void _handleContinue() async {
     final isLoggedIn = authToken.isNotEmpty;
-    
+
     if (!isLoggedIn) {
       // First installation flow -> Go to Onboarding
       Navigator.pushNamedAndRemoveUntil(
@@ -292,7 +312,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
         SecureStorageKeys.PERMISSION,
       );
       if (!mounted) return;
-      
+
       if (!hasCompletedOnboarding) {
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -316,9 +336,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
     try {
       final apiClient = GetIt.instance<ApiClient>();
-      final planName = _selectedPackageIndex == 0
-          ? 'standard'
-          : (_selectedPackageIndex == 1 ? 'couples' : 'annual');
+      final planName =
+          _selectedPackageIndex == 0
+              ? 'standard'
+              : (_selectedPackageIndex == 1 ? 'couples' : 'annual');
 
       final response = await apiClient.request(
         "/payment/initialize-subscription",
@@ -339,16 +360,17 @@ class _PaywallScreenState extends State<PaywallScreen> {
         final publicKey = data?['publicKey']?.toString();
         final reference = data?['reference']?.toString();
 
-        if (accessCode != null && 
-            accessCode.isNotEmpty && 
-            publicKey != null && 
-            publicKey.isNotEmpty && 
-            authorizationUrl != null && 
+        if (accessCode != null &&
+            accessCode.isNotEmpty &&
+            publicKey != null &&
+            publicKey.isNotEmpty &&
+            authorizationUrl != null &&
             !authorizationUrl.contains("mock-checkout")) {
           // Launch real Paystack Flutter SDK
-          final priceInKobo = _selectedPackageIndex == 0
-              ? 14900
-              : (_selectedPackageIndex == 1 ? 19900 : 149900);
+          final priceInKobo =
+              _selectedPackageIndex == 0
+                  ? 14900
+                  : (_selectedPackageIndex == 1 ? 19900 : 149900);
 
           final userEmail = email.isNotEmpty ? email : "user@cheetanews.com";
 
@@ -356,7 +378,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
             context: context,
             customerEmail: userEmail,
             amount: priceInKobo.toString(),
-            reference: reference ?? 'ref_${DateTime.now().millisecondsSinceEpoch}',
+            reference:
+                reference ?? 'ref_${DateTime.now().millisecondsSinceEpoch}',
             publicKey: publicKey,
             authorizationUrl: authorizationUrl,
             onClosed: () {
@@ -376,7 +399,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
           _showErrorSnackBar("Unable to load checkout gateway.");
         }
       } else {
-        _showErrorSnackBar(response?['error']?.toString() ?? "Failed to initialize payment.");
+        _showErrorSnackBar(
+          response?['error']?.toString() ?? "Failed to initialize payment.",
+        );
       }
     } catch (e) {
       if (!mounted) return;
@@ -390,10 +415,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
   void _showErrorSnackBar(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 
@@ -425,12 +447,14 @@ class _PaywallScreenState extends State<PaywallScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 12),
-              
+
               // Paywall Badge/Icon
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.appPriSecColor.primaryColor.withValues(alpha: 0.1),
+                  color: AppColors.appPriSecColor.primaryColor.withValues(
+                    alpha: 0.1,
+                  ),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -452,28 +476,30 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              
+
               // Subtitle
               Consumer<StealthProvider>(
                 builder: (context, stealthProvider, child) {
                   String statusText = "";
                   Color statusColor = Colors.white;
-                  
+
                   if (authToken.isEmpty) {
                     statusText = "Confirming 3-Day Free Trial";
                     statusColor = Colors.cyanAccent;
                   } else if (stealthProvider.isSubscribed) {
-                    statusText = "Subscription Status: Active Subscriber";
+                    statusText = "Subscription Status: Active";
                     statusColor = Colors.greenAccent;
                   } else if (stealthProvider.isTrialActive) {
                     final days = stealthProvider.trialDaysRemaining;
-                    statusText = "Subscription Status: Trial Active ($days Days Remaining)";
+                    statusText =
+                        "Subscription Status: Trial Active ($days Days Remaining)";
                     statusColor = Colors.amberAccent;
                   } else {
-                    statusText = "Subscription Status: Trial Expired (3-Day Limit)";
+                    statusText =
+                        "Subscription Status: Trial Expired (3-Day Limit)";
                     statusColor = Colors.redAccent;
                   }
-                  
+
                   return Text(
                     statusText,
                     style: TextStyle(
@@ -510,12 +536,14 @@ class _PaywallScreenState extends State<PaywallScreen> {
               Consumer<StealthProvider>(
                 builder: (context, stealthProvider, child) {
                   final isLoggedIn = authToken.isNotEmpty;
-                  final showContinue = !isLoggedIn || stealthProvider.isTrialActive;
-                  
+                  final showContinue =
+                      !isLoggedIn || stealthProvider.isTrialActive;
+
                   if (!showContinue) return const SizedBox.shrink();
-                  
-                  String btnText = isLoggedIn ? "Continue" : "Start 3-Day Free Trial";
-                  
+
+                  String btnText =
+                      isLoggedIn ? "Continue" : "Start 3-Day Free Trial";
+
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 24),
                     child: SizedBox(
@@ -552,258 +580,294 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     children: [
                       // Subscription package selector (vibrant visual cards)
                       Column(
-                children: List.generate(_packages.length, (index) {
-                  final package = _packages[index];
-                  final isSelected = _selectedPackageIndex == index;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedPackageIndex = index;
-                      });
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xff1C281F) // Premium subtle dark green
-                            : const Color(0xff1C1C1E),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.appPriSecColor.primaryColor
-                              : Colors.white.withValues(alpha: 0.08),
-                          width: isSelected ? 2.0 : 1.0,
-                        ),
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: AppColors.appPriSecColor.primaryColor.withValues(alpha: 0.1),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                )
-                              ]
-                            : null,
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected
-                                    ? AppColors.appPriSecColor.primaryColor
-                                    : Colors.white38,
-                                width: 2,
+                        children: List.generate(_packages.length, (index) {
+                          final package = _packages[index];
+                          final isSelected = _selectedPackageIndex == index;
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedPackageIndex = index;
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color:
+                                    isSelected
+                                        ? const Color(
+                                          0xff1C281F,
+                                        ) // Premium subtle dark green
+                                        : const Color(0xff1C1C1E),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color:
+                                      isSelected
+                                          ? AppColors
+                                              .appPriSecColor
+                                              .primaryColor
+                                          : Colors.white.withValues(
+                                            alpha: 0.08,
+                                          ),
+                                  width: isSelected ? 2.0 : 1.0,
+                                ),
+                                boxShadow:
+                                    isSelected
+                                        ? [
+                                          BoxShadow(
+                                            color: AppColors
+                                                .appPriSecColor
+                                                .primaryColor
+                                                .withValues(alpha: 0.1),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ]
+                                        : null,
                               ),
-                              color: isSelected
-                                  ? AppColors.appPriSecColor.primaryColor
-                                  : Colors.transparent,
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 20,
+                                    height: 20,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color:
+                                            isSelected
+                                                ? AppColors
+                                                    .appPriSecColor
+                                                    .primaryColor
+                                                : Colors.white38,
+                                        width: 2,
+                                      ),
+                                      color:
+                                          isSelected
+                                              ? AppColors
+                                                  .appPriSecColor
+                                                  .primaryColor
+                                              : Colors.transparent,
+                                    ),
+                                    child:
+                                        isSelected
+                                            ? const Icon(
+                                              Icons.check,
+                                              size: 12,
+                                              color: Colors.black,
+                                            )
+                                            : null,
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          package['name'],
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight:
+                                                isSelected
+                                                    ? FontWeight.bold
+                                                    : FontWeight.w600,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          package['description'],
+                                          style: const TextStyle(
+                                            color: Colors.white38,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        package['price'],
+                                        style: TextStyle(
+                                          color:
+                                              isSelected
+                                                  ? AppColors
+                                                      .appPriSecColor
+                                                      .primaryColor
+                                                  : Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                      Text(
+                                        "/${package['period']}",
+                                        style: const TextStyle(
+                                          color: Colors.white30,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                            child: isSelected
-                                ? const Icon(
-                                    Icons.check,
-                                    size: 12,
-                                    color: Colors.black,
-                                  )
-                                : null,
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          );
+                        }),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Checkout Action Card
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: AppColors.subscriptionGradient,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.green.withValues(alpha: 0.2),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              "SELECTED PLAN: ${_packages[_selectedPackageIndex]['name'].toUpperCase()}",
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
                               children: [
                                 Text(
-                                  package['name'],
-                                  style: TextStyle(
+                                  _packages[_selectedPackageIndex]['price'],
+                                  style: const TextStyle(
                                     color: Colors.white,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 32,
                                   ),
                                 ),
-                                const SizedBox(height: 2),
                                 Text(
-                                  package['description'],
+                                  " / ${_packages[_selectedPackageIndex]['period']}",
                                   style: const TextStyle(
-                                    color: Colors.white38,
-                                    fontSize: 11,
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                package['price'],
-                                style: TextStyle(
-                                  color: isSelected ? AppColors.appPriSecColor.primaryColor : Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
+                            const SizedBox(height: 16),
+                            const Divider(color: Colors.white24, height: 1),
+                            const SizedBox(height: 16),
+                            _isInitializingPayment
+                                ? const Center(
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                                : SizedBox(
+                                  width: double.infinity,
+                                  height: 52,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color.fromARGB(
+                                        255,
+                                        255,
+                                        226,
+                                        2,
+                                      ),
+                                      foregroundColor: Colors.black,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      elevation: 0,
+                                    ),
+                                    onPressed: _handleRealSubscribe,
+                                    child: const Text(
+                                      "Activate with Card",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                "/${package['period']}",
-                                style: const TextStyle(
-                                  color: Colors.white30,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Checkout Action Card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: AppColors.subscriptionGradient,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.green.withValues(alpha: 0.2),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    )
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      "SELECTED PLAN: ${_packages[_selectedPackageIndex]['name'].toUpperCase()}",
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 11,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Text(
-                          _packages[_selectedPackageIndex]['price'],
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 32,
-                          ),
+                          ],
                         ),
-                        Text(
-                          " / ${_packages[_selectedPackageIndex]['period']}",
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    const Divider(color: Colors.white24, height: 1),
-                    const SizedBox(height: 16),
-                    _isInitializingPayment
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation(Colors.white),
-                            ),
-                          )
-                        : SizedBox(
-                            width: double.infinity,
-                            height: 52,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: Colors.black,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                elevation: 0,
-                              ),
-                              onPressed: _handleRealSubscribe,
-                              child: const Text(
-                                "Subscribe via PayStack",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      const SizedBox(height: 20),
-      // Support Card
-      GestureDetector(
-        onTap: () {
-          Navigator.pushNamed(context, AppRoutes.support);
-        },
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          decoration: BoxDecoration(
-            color: const Color(0xff1C1C1E),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.08),
-              width: 1.0,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.appPriSecColor.primaryColor.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.support_agent,
-                  color: AppColors.appPriSecColor.primaryColor,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: Text(
-                  "need help? contact support team",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const Icon(
-                Icons.chevron_right,
-                color: Colors.white38,
+              const SizedBox(height: 20),
+              // Support Card
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.support);
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xff1C1C1E),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.appPriSecColor.primaryColor
+                              .withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.support_agent,
+                          color: AppColors.appPriSecColor.primaryColor,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Text(
+                          "need help? contact support team",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, color: Colors.white38),
+                    ],
+                  ),
+                ),
               ),
-            ],
-          ),
-        ),
-      ),
-      const SizedBox(height: 16),
+              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -811,7 +875,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
     );
   }
 
-  Widget _buildFeatureRow({required IconData icon, required String title, required String subtitle}) {
+  Widget _buildFeatureRow({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

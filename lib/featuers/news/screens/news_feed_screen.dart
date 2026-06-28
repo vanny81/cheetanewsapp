@@ -7,6 +7,7 @@ import 'package:whoxa/featuers/auth/provider/stealth_provider.dart';
 import 'package:whoxa/utils/preference_key/constant/app_assets.dart';
 import 'package:whoxa/utils/preference_key/constant/app_routes.dart';
 import 'package:whoxa/utils/preference_key/constant/app_colors.dart';
+import 'package:whoxa/widgets/tour_guide_overlay.dart';
 
 class NewsFeedScreen extends StatefulWidget {
   const NewsFeedScreen({super.key});
@@ -20,6 +21,9 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
   Timer? _tapResetTimer;
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
+
+  /// Key for the AppBar brand title — used by the tour guide to point at it.
+  final GlobalKey _appBarTitleKey = GlobalKey();
 
   @override
   void initState() {
@@ -75,13 +79,16 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
               description.contains(_searchQuery);
         }).toList();
 
-    return Scaffold(
+    return Stack(
+      children: [
+        Scaffold(
       backgroundColor: const Color(0xff121212), // Premium dark background
       appBar: AppBar(
         backgroundColor: const Color(0xff1e1e1e),
         elevation: 0,
         centerTitle: true,
         title: GestureDetector(
+          key: _appBarTitleKey,
           onTap: _handleLogoTap,
           behavior: HitTestBehavior.opaque,
           child: Row(
@@ -185,6 +192,10 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
           Navigator.pushNamed(context, AppRoutes.paywall);
         },
       ),
+        ),
+        // One-time tour guide overlay (shows only on first launch)
+        TourGuideOverlay(targetKey: _appBarTitleKey),
+      ],
     );
   }
 

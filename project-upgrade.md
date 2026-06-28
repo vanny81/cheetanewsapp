@@ -211,6 +211,30 @@ module.exports = {
 3. **Paywall Screen**: Showcase features, display subscription status details, and provide a premium "Activate Premium" card featuring glassmorphism gradients.
 4. **Panic Lock Button**: An overlay padlock button with micro-animations that responds instantly.
 
+### Phase 4: First-Launch Tour Guide Overlay
+A **one-time tour guide overlay** is displayed on the News Feed screen to educate users about the hidden triple-tap gesture on first app launch after installation.
+
+* **New File**: `lib/widgets/tour_guide_overlay.dart`
+  * Self-contained `TourGuideOverlay` widget using `GlobalKey` to dynamically locate the AppBar brand title
+  * Semi-transparent dark backdrop (75% opacity) with a gold spotlight border highlighting the tap target
+  * Animated bouncing 👆 hand emoji pointing at the "CheetaNews" text
+  * Premium styled message card containing:
+    * Gold lock icon badge and "Hidden Feature" title
+    * Main instruction: *"Tap the word **CheetaNews** **3 times** to access the hidden secret chat"*
+    * ⚠️ Warning notice: *"Once you close this message you will never see it again!"*
+    * Tappable help link to `https://cheetanewsapp.site` for more information
+    * "Got it!" dismiss button
+  * Smooth fade, bounce, and pulse glow animations
+  * Tap-anywhere-to-dismiss behaviour
+
+* **Persistence**: Uses the existing `SecurePrefs` utility to store a `news_feed_tour_seen` boolean flag. Once dismissed, the overlay never appears again (flag survives app restarts; cleared only on full storage wipe/reinstall).
+
+* **Modified File**: `lib/featuers/news/screens/news_feed_screen.dart`
+  * Added `GlobalKey` on the AppBar title `GestureDetector`
+  * Wrapped `Scaffold` in a `Stack` with `TourGuideOverlay` layered on top
+
+* **No new dependencies added** — uses existing `flutter_secure_storage` (via `SecurePrefs`), `url_launcher`, and standard Flutter animation APIs.
+
 ---
 
 ## 8. Verification & Testing Plan
