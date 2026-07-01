@@ -24,18 +24,24 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  final List<Widget Function(BuildContext)> permissionWidgets = const [
-    _NotificationPermission.build,
-    _LocationPermission.build,
-    _ContactPermission.build,
-    _PhotoGalleryPermission.build,
-  ];
+  // Android: 3 steps (system picker needs no permission)
+  // iOS: 4 steps (includes Photos)
+  late final List<Widget Function(BuildContext)> permissionWidgets;
 
   late OnboardingProvider _provider;
 
   @override
   void initState() {
     super.initState();
+    // Build the widget list based on platform
+    permissionWidgets = [
+      _NotificationPermission.build,
+      _LocationPermission.build,
+      _ContactPermission.build,
+      // Photos step only on iOS — Android uses system picker (no permission needed)
+      if (!kIsWeb && Platform.isIOS) _PhotoGalleryPermission.build,
+    ];
+
     // Initialize the provider when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _provider = Provider.of<OnboardingProvider>(context, listen: false);
@@ -175,16 +181,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         currentPermission = Permission.contacts;
         break;
       case 3:
+        // iOS only — Photos
         if (!kIsWeb && Platform.isIOS) {
           currentPermission = Permission.photos;
         } else {
-          // For Android, check if any of the media permissions are granted
-          currentPermission =
-              provider.isPermissionGranted(Permission.photos) ||
-                      provider.isPermissionGranted(Permission.videos) ||
-                      provider.isPermissionGranted(Permission.storage)
-                  ? Permission.photos
-                  : Permission.storage;
+          // Fallback (should not reach here on Android)
+          currentPermission = Permission.notification;
         }
         break;
       default:

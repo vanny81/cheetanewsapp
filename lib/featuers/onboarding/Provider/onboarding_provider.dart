@@ -34,7 +34,8 @@ class OnboardingProvider extends ChangeNotifier {
   }
 
   int currentStep = 0;
-  final int totalSteps = 4;
+  // 4 steps on iOS (includes Photos), 3 on Android (system picker needs no permission)
+  int get totalSteps => (!kIsWeb && Platform.isIOS) ? 4 : 3;
 
   void onBack() {
     if (currentStep > 0) {
@@ -63,7 +64,8 @@ class OnboardingProvider extends ChangeNotifier {
         permissionName = "Contacts";
         break;
       case 3:
-        permissionName = "Gallery";
+        // iOS only — Android removed Gallery step
+        permissionName = "Photos";
         break;
     }
 
@@ -80,7 +82,7 @@ class OnboardingProvider extends ChangeNotifier {
     if (!context.mounted) return;
 
     // Move to next step or finish
-    if (currentStep < 3) {
+    if (currentStep < totalSteps - 1) {
       currentStep++;
       notifyListeners();
     } else {
@@ -188,16 +190,8 @@ class OnboardingProvider extends ChangeNotifier {
         bool isGranted = status.isGranted || status.isLimited;
         debugPrint("iOS Photos permission status: $status, isGranted: $isGranted");
         return isGranted;
-      } else if (!kIsWeb && Platform.isAndroid) {
-        // ✅ IMPROVED: Check multiple media permissions on Android
-        var photosStatus = await Permission.photos.status;
-        var videosStatus = await Permission.videos.status;
-        var storageStatus = await Permission.storage.status;
-        
-        bool isGranted = photosStatus.isGranted || videosStatus.isGranted || storageStatus.isGranted;
-        debugPrint("Android Media permissions - Photos: $photosStatus, Videos: $videosStatus, Storage: $storageStatus, isGranted: $isGranted");
-        return isGranted;
       }
+      // Android: no persistent media permissions needed — system picker handles access
       return false;
     } catch (e) {
       debugPrint("Error checking photo permission: $e");
@@ -601,17 +595,9 @@ class OnboardingProvider extends ChangeNotifier {
         break;
       case 3:
         permissionName = "Gallery";
-        // For gallery, we check different permissions based on platform
+        // iOS only — check photos permission
         if (!kIsWeb && Platform.isIOS) {
           isCurrentlyGranted = await checkPhotoPermission();
-        } else {
-          final photoStatus = await Permission.photos.status;
-          final videoStatus = await Permission.videos.status;
-          final storageStatus = await Permission.storage.status;
-          isCurrentlyGranted = 
-              photoStatus.isGranted || 
-              videoStatus.isGranted || 
-              storageStatus.isGranted;
         }
         break;
       default:
@@ -625,7 +611,7 @@ class OnboardingProvider extends ChangeNotifier {
     if (isCurrentlyGranted) {
       debugPrint("✅ $permissionName permission already granted - moving to next step");
       // Move to next step or finish
-      if (currentStep < 3) {
+      if (currentStep < totalSteps - 1) {
         currentStep++;
         notifyListeners();
       } else {
@@ -668,8 +654,10 @@ class OnboardingProvider extends ChangeNotifier {
         case 2: // Contacts
           isGranted = await requestContactPermission();
           break;
-        case 3: // Gallery
-          isGranted = await requestMediaPermission();
+        case 3: // Gallery — iOS only
+          if (!kIsWeb && Platform.isIOS) {
+            isGranted = await requestMediaPermission();
+          }
           break;
       }
     } finally {
@@ -711,7 +699,7 @@ class OnboardingProvider extends ChangeNotifier {
       if (!context.mounted) return;
 
       // Move to next step or finish
-      if (currentStep < 3) {
+      if (currentStep < totalSteps - 1) {
         currentStep++;
         notifyListeners();
       } else {
